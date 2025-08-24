@@ -1,0 +1,2 @@
+# requirements.txt の内容
+Django==4.2.11
