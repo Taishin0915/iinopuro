@@ -24,9 +24,9 @@ urlpatterns = [
 
 # config/urls.py
 from django.contrib import admin
-from django.urls import path, include # ← include があるか
+from django.urls import path, include 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('wind_app/', include('wind_app.urls')), # ← 正しく追加されているか
+    path('wind_app/', include('wind_app.urls')), 
 ]

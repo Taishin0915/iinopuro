@@ -1,3 +1,7 @@
+# wind_app/admin.py
 from django.contrib import admin
+from .models import Carrier, Report, ReportImage 
 
-# Register your models here.
+admin.site.register(Carrier)
+admin.site.register(Report)
+admin.site.register(ReportImage)
