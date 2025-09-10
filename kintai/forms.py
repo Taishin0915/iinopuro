@@ -1,0 +1,99 @@
+from django import forms
+from core.models import ReportImage
+from core.models import Carrier,Report
+from kintai.models import Timestamp# ◀ Carrierを追加
+
+class ReportImageForm(forms.ModelForm):
+    """
+    レポート画像をアップロードするためのフォーム
+    """
+    class Meta:
+        model = ReportImage
+        fields = ['upload_img']
+        widgets = {
+            'upload_img': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            })
+        }
+
+
+
+
+class ClockOutForm(forms.ModelForm):
+    # Carrierを選択するためのフィールドを追加
+    carrier = forms.ModelChoiceField(
+        queryset=Carrier.objects.all(),
+        label="運送会社",
+        empty_label="運送会社を選択してください"
+    )
+
+    class Meta:
+        model = Timestamp
+        # フォームで使うフィールドを指定 (statusとtimestampはビューで設定するので不要)
+        fields = ['carrier'] 
+
+
+
+# kintai/forms.py
+
+from django import forms
+from core.models import Report, Carrier
+
+# ドロップダウンで表示する数字の選択肢を定義（例：0から20まで）
+NUMBER_CHOICES = [(i, str(i)) for i in range(21)]
+
+# ... (他のフォームクラスはそのまま) ...
+
+# kintai/forms.py
+
+NUMBER_CHOICES = [(i, str(i)) for i in range(21)]
+
+
+class ClockOutReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        # フォームに表示したいフィールドをリストアップ
+        fields = [
+            'carrier', 
+            'close_number', 
+            'swing_number', 
+            'new_close_number', 
+            'upg_close_number', 
+            'mnp_close_number', 
+            'tv_close_number', 
+            'net_close_number', 
+            'tel_close_number', 
+            'tos_close_number',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Carrierの選択肢を運送会社名で表示し、必須項目にする
+        self.fields['carrier'].queryset = Carrier.objects.all()
+        self.fields['carrier'].label = "運送会社"
+        self.fields['carrier'].empty_label = "選択してください"
+        self.fields['carrier'].required = True
+
+        # ドロップダウンに変更したい数値フィールドのリスト
+        number_fields = [
+            'close_number', 'swing_number', 'new_close_number', 'upg_close_number',
+            'mnp_close_number', 'tv_close_number', 'net_close_number',
+            'tel_close_number', 'tos_close_number'
+        ]
+
+        # ループ処理ですべての数値フィールドをドロップダウンに変更
+        for field_name in number_fields:
+            self.fields[field_name].widget = forms.Select(choices=NUMBER_CHOICES)
+            self.fields[field_name].label = field_name.replace('_', ' ').title() # ラベル名を整形
+
+        # J:COMの時だけ表示するフィールドに、目印となるCSSクラスを追加
+        jcom_fields = [
+            'tv_close_number', 
+            'net_close_number', 
+            'tel_close_number', 
+            'tos_close_number'
+        ]
+        for field_name in jcom_fields:
+            self.fields[field_name].widget.attrs.update({'class': 'jcom-field'})

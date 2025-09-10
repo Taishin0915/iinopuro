@@ -37,7 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-      'wind_app',
+    'core',
+    'kintai',
+    'theme',
+    'django_browser_reload',
 ]
 
 MIDDLEWARE = [
@@ -48,7 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -77,12 +80,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_NAME'),
-        'USER': os.environ.get('POSTGRES_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': 'db', # docker-compose.ymlで定義したサービス名
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -127,3 +126,23 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# アップロードされたファイルを保存するディレクトリの場所
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# アップロードされたファイルにアクセスするためのURL
+MEDIA_URL = '/media/'
+
+
+
+
+# ログイン後のリダイレクト先
+LOGIN_REDIRECT_URL = '/kintai/'
+# ログアウト後のリダイレクト先
+LOGOUT_REDIRECT_URL = '/kintai/'
+if DEBUG:
+    INTERNAL_IPS = [
+        "127.0.0.1",
+    ]

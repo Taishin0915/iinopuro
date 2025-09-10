@@ -1,0 +1,166 @@
+/* style.css */
+
+:root {
+    --primary-color: #26a69a;
+    --primary-dark-color: #00796b;
+    --secondary-color: #80cbc4;
+    --light-background-color: #e0f7fa;
+    --dark-text-color: #004d40;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--light-background-color);
+    color: var(--dark-text-color);
+    text-align: center;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+    font-size: 1.2em;
+}
+
+main {
+    padding: 20px;
+}
+
+.welcome-message h2 {
+    margin-top: 5px;
+    font-size: 1.8em;
+    padding-bottom: 16px;
+
+}
+
+.performance-summary {
+    margin: 30px 0;
+}
+
+#month-selector {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #b2dfdb;
+    border-radius: 8px;
+    background-color: white;
+    width: 150px;
+}
+
+.stats-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 40px 0;
+}
+
+.stat-item .label {
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+
+.stat-item .value {
+    font-size: 3em;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* ボタングループのスタイル */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 50px;
+}
+
+/* すべてのボタン（aタグとform）に同じ幅を適用 */
+.button-group > a,
+.button-group > form {
+    width: 70%;
+    margin: 0;
+    display: block;
+}
+
+/* ボタンの基本スタイル */
+.action-button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 15px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 25px;
+    color: white; 
+    background-color: #26a69a;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    transition: transform 0.1s ease-out, background-color 0.1s ease-out;
+}
+
+/* ボタンが押された瞬間のアニメーション */
+.action-button:active {
+    transform: scale(0.98) translateY(2px);
+    background-color: var(--primary-dark-color); 
+}
+
+/* ボタンがフォーカスされた時の枠線を消す */
+.action-button:focus {
+    outline: none;
+}
+
+/* フォームグループのスタイル */
+.form-group{
+    width: 70%; 
+    padding: 15px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 25px;
+    color: white; 
+    background-color: var(--primary-color);
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s ease-out, background-color 0.1s ease-out;
+}
+
+.forms-group:active {
+    transform: scale(0.98) translateY(2px);
+    background-color: var(--primary-dark-color); 
+
+
+
+    .photo-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* ◀ これが重要です */
+    }
+}
+
+
+
+
+/* --- フォーム入力欄のスタイル --- */
+
+/* フォーム内の全ての入力要素（テキスト、ドロップダウンなど） */
+.form-fields input,
+.form-fields select,
+.form-fields textarea {
+    width: 100%; /* 親要素の幅いっぱいに広げる */
+    padding: 12px;
+    margin-bottom: 10px; /* 各項目の下のスペース */
+    border: 1px solid #b2dfdb;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 1em;
+    box-sizing: border-box; /* paddingを含めて幅を計算 */
+}
+
+/* フォームのラベル（項目の名前） */
+.form-fields label {
+    display: block; /* ラベルをブロック要素にして改行 */
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--dark-text-color);
+}

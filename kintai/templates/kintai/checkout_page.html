@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang = "ja">
+<head>
+     <meta charset=" UTF-8">
+     <title>退勤報告</title>
+     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>退勤報告</h1>
+    </header>
+
+    <main>
+        {% if last_clock_in %}
+            <div class="performance-summary">
+                <h3>最終出勤時刻</h3>
+                <p style="font-size: 1.5em;">{{ last_clock_in.timestamp }}</p>
+            </div>
+    
+            <div class="button-group">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-fields">
+                        {{ form.as_p }}
+                    </div>
+                    
+                    <button type="submit" class="action-button">退勤を確定する</button>
+                </form>
+                <a href="{% url 'kintai_top' %}" class="action-button secondary">キャンセル</a>
+            </div>
+        {% else %}
+            <div class="performance-summary">
+                <h1>出勤されていません</h1>
+                <h2>管理者までお問い合わせください</h2>
+            </div>
+        {% endif %}
+    </main>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 必要な要素を取得
+        const carrierSelect = document.querySelector('select[name="carrier"]');
+        const jcomFields = document.querySelectorAll('.jcom-field');
+        
+        // 表示を切り替えるための関数
+        function toggleJcomFields() {
+            // 現在選択されている運送会社のテキストを取得
+            const selectedOption = carrierSelect.options[carrierSelect.selectedIndex];
+            const isJcom = selectedOption && selectedOption.text.includes('J:COM');
+            
+            // jcom-fieldクラスを持つ全ての要素に対して処理を実行
+            jcomFields.forEach(function(field) {
+                // Djangoが生成する親の<p>タグを取得して、それを丸ごと表示/非表示にする
+                const fieldContainer = field.closest('p');
+                if (fieldContainer) {
+                    fieldContainer.style.display = isJcom ? 'block' : 'none';
+                }
+            });
+        }
+        
+        // ページが読み込まれた時に、まず一度実行して初期状態を設定
+        toggleJcomFields();
+        
+        // 運送会社の選択が変更された時に、毎回関数を実行
+        carrierSelect.addEventListener('change', toggleJcomFields);
+    });
+</script>
+</body>
+</html>

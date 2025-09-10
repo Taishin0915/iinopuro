@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>{{ title }}</h1>
+    </header>
+
+    <main>
+        <div class="welcome-message">
+            <p>{{ message }}</p>
+            <h2>{{ user.username }}さん</h2>
+        </div>
+        
+        <div class="button-group">
+            <a href="{% url 'kintai_checkin' %}" class="action-button">出勤</a>
+            <a href="{% url 'kintai_checkout' %}" class="action-button">退勤</a>
+            <a href="#" class="action-button">個人実績</a>
+            <a href="#" class="action-button">実績一覧</a>
+        </div>
+    </main>
+    
+    <script src="{% static 'kintai/script.js' %}"></script>
+</body>
+</html>

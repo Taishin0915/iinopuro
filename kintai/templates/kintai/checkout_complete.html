@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>退勤確認</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>退勤確認</h1>
+    </header>
+
+    <main>
+        <div class="welcome-message">
+            <p>{{ user.username }}さん</p>
+            <h2>お疲れ様でした</h2>
+        </div>
+
+        {% if last_clock_in %}
+            <div class="performance-summary">
+                <h3>最終出勤時刻</h3>
+                <p style="font-size: 1.5em;">{{ last_clock_in.timestamp }}</p>
+            </div>
+
+            <div class="button-group">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="action-button">退勤を確定する</button>
+                </form>
+                <a href="{% url 'kintai_top' %}" class="action-button secondary">キャンセル</a>
+            </div>
+        {% else %}
+            <div class="performance-summary">
+                <p>有効な出勤記録が見つかりません。</p>
+            </div>
+            <div class="button-group">
+                 <a href="{% url 'kintai_top' %}" class="action-button">マイページに戻る</a>
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>

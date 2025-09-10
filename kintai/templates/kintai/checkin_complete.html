@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>報告完了</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>報告が完了しました</h1>
+    </header>
+
+    <main>
+        <div class="welcome-message">
+            <p>{{ user.username }}さんの入店報告を受け付けました。</p>
+        
+        </div>
+
+        <div class="button-group">
+            <a href="{% url 'kintai_top' %}" class="action-button">マイページに戻る</a>
+        </div>
+    </main>
+</body>
+</html>
