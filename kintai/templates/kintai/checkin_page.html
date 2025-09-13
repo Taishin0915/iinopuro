@@ -20,7 +20,7 @@
             {% csrf_token %}
 
             <div id="image-preview-container" class="photo-container">
-                <img id="preview-image" src="{% static 'kintai/images/no_image.png' %}" alt="No Image">
+                <img id="preview-image" src="{% static 'kintai/images/no_image.svg' %}" alt="No Image" style="width: 200px; height: 150px; object-fit: contain;">
             </div>
 
             <input type="file" accept="image/*" id="photo-upload-input" name="upload_img" capture="user" style="display: none;">

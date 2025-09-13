@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // 画像の読み込みが完了したら、プレビュー用のimgタグのsrcを更新
             reader.onload = (e) => {
                 previewImage.src = e.target.result;
+                previewImage.style.width = '200px';
+                previewImage.style.height = '150px';
+                previewImage.style.objectFit = 'cover';
             };
             
             reader.readAsDataURL(file);

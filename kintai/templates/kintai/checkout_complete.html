@@ -20,7 +20,7 @@
         {% if last_clock_in %}
             <div class="performance-summary">
                 <h3>最終出勤時刻</h3>
-                <p style="font-size: 1.5em;">{{ last_clock_in.timestamp }}</p>
+                <p style="font-size: 1.5em;">{{ last_clock_in.timestamp|date:"Y年m月d日 H:i" }}</p>
             </div>
 
             <div class="button-group">

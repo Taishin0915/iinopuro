@@ -8,4 +8,14 @@ urlpatterns = [
     path('complete/', views.checkin_complete_view, name='kintai_complete'),
     path('clockout/', views.kintai_clockout_view, name='kintai_checkout'),
     path('clockout/complete/', views.checkout_complete_view, name='kintai_checkout_complete'),
+    path('performance/', views.performance_view, name='kintai_performance'),
+    path('team-performance/', views.team_performance_view, name='team_performance'),
+    
+    # 管理者画面のURL
+    path('admin/', views.admin_dashboard_view, name='admin_dashboard'),
+    path('admin/users/', views.admin_users_view, name='admin_users'),
+    path('admin/users/<int:user_id>/performance/', views.admin_user_performance_view, name='admin_user_performance'),
+    path('admin/reports/', views.admin_reports_view, name='admin_reports'),
+    path('admin/carriers/', views.admin_carriers_view, name='admin_carriers'),
+    path('admin/analytics/', views.admin_analytics_view, name='admin_analytics'),
 ]
