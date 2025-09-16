@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.db.models import Count
-from datetime import date
+from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from django.contrib.admin.views.decorators import staff_member_required
 # 🔽 Report, ReportImage, Carrier モデルをインポート
@@ -22,40 +22,23 @@ def get_user_attendance_status(user):
         'CLOCKED_OUT': 退勤中
         'NO_RECORD': 記録なし
     """
-    # 最新の出勤記録を取得
-    last_clock_in = Timestamp.objects.filter(
-        user=user,
-        status='CLOCK_IN'
-    ).order_by('-timestamp').first()
+    # 今日の日付
+    today = date.today()
     
-    # 最新の退勤記録を取得
-    last_clock_out = Timestamp.objects.filter(
+    # 今日のレポートを取得
+    today_reports = Report.objects.filter(
         user=user,
-        status='CLOCK_OUT'
-    ).order_by('-timestamp').first()
+        work_date=today
+    ).order_by('-created_at')
     
-    # 記録がない場合
-    if not last_clock_in and not last_clock_out:
+    if not today_reports.exists():
         return 'NO_RECORD'
     
-    # 出勤記録がない場合（退勤のみ）
-    if not last_clock_in:
-        return 'CLOCKED_OUT'
+    # 最新のレポートを取得
+    latest_report = today_reports.first()
     
-    # 退勤記録がない場合（出勤のみ）
-    if not last_clock_out:
-        return 'CLOCKED_IN'
-    
-    # 両方の記録がある場合、最新の記録を確認
-    if last_clock_in.timestamp > last_clock_out.timestamp:
-        return 'CLOCKED_IN'
-    else:
-        return 'CLOCKED_OUT'
-from .models import Timestamp
-from .forms import ClockOutForm
-from .forms import ClockOutReportForm 
-
-# 🔽 カレンダー取得用
+    # レポートが作成された時刻を出勤時刻として扱う
+    return 'CLOCKED_IN'
 # 外部サービス呼び出しのライブラリは起動時のimportを避けるため関数内で遅延importする
 
 
@@ -740,6 +723,70 @@ def admin_user_performance_view(request, user_id):
     }
     
     return render(request, 'admin/user_performance.html', context)
+
+
+@staff_member_required
+def admin_attendance_management_view(request):
+    """
+    稼働管理画面 - 出勤中のユーザーと打刻時刻を表示
+    """
+    User = get_user_model()
+    
+    # 日付パラメータを取得（デフォルトは今日）
+    selected_date = request.GET.get('date')
+    if selected_date:
+        try:
+            selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = date.today()
+    else:
+        selected_date = date.today()
+    
+    # 全ユーザーを取得
+    all_users = User.objects.all().order_by('username')
+    
+    # 選択された日付のレポートを取得
+    attendance_data = []
+    for user in all_users:
+        # 選択された日付のレポートを取得
+        date_reports = Report.objects.filter(
+            user=user,
+            work_date=selected_date
+        ).order_by('-created_at')
+        
+        if date_reports.exists():
+            latest_report = date_reports.first()
+            attendance_data.append({
+                'user': user,
+                'status': 'CLOCKED_IN',
+                'clock_in_time': latest_report.created_at,
+                'carrier': latest_report.carrier,
+                'close_number': latest_report.close_number,
+                'swing_number': latest_report.swing_number,
+            })
+        else:
+            attendance_data.append({
+                'user': user,
+                'status': 'NO_RECORD',
+                'clock_in_time': None,
+                'carrier': None,
+                'close_number': 0,
+                'swing_number': 0,
+            })
+    
+    # 出勤中のユーザーのみをフィルタ
+    working_users = [data for data in attendance_data if data['status'] == 'CLOCKED_IN']
+    
+    context = {
+        'all_users': attendance_data,
+        'working_users': working_users,
+        'working_count': len(working_users),
+        'total_count': len(all_users),
+        'selected_date': selected_date,
+        'today': date.today(),
+    }
+    
+    return render(request, 'admin/attendance_management.html', context)
 
 
 
