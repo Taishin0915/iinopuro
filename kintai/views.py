@@ -13,6 +13,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from core.models import Report, ReportImage, Carrier
 # 🔽 作成したフォームをインポート
 from .forms import ReportImageForm
+from .forms import ClockOutReportForm
+from .models import Timestamp
 
 def get_user_attendance_status(user):
     """

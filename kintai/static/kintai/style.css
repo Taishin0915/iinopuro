@@ -530,7 +530,7 @@ body.admin-page::before {
     top: 0;
     left: 0;
 
-    width: 100%;
+        width: 100%;
         height: 100%;
     background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
@@ -1199,23 +1199,64 @@ body.login-page {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     overflow: hidden;
+    table-layout: fixed;
 }
 
 .attendance-table th {
     background: rgba(120, 219, 255, 0.2);
     color: #78dbff;
-    padding: 15px 12px;
-    text-align: left;
+    padding: 15px 8px;
+    text-align: center;
     font-weight: 500;
     font-size: 0.9em;
     letter-spacing: 0.5px;
+    width: 33.33%;
+    box-sizing: border-box;
+}
+
+.attendance-table th:nth-child(1) {
+    width: 30%;
+    text-align: center;
+    padding-right: 15px;
+}
+
+.attendance-table th:nth-child(2) {
+    width: 35%;
+    text-align: center;
+}
+
+.attendance-table th:nth-child(3) {
+    width: 35%;
+    text-align: center;
+    padding-left: 15px;
 }
 
 .attendance-table td {
-    padding: 12px;
+    padding: 12px 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     color: #ffffff;
     font-size: 0.9em;
+    width: 33.33%;
+    text-align: center;
+    word-wrap: break-word;
+    box-sizing: border-box;
+}
+
+.attendance-table td:nth-child(1) {
+    width: 30%;
+    text-align: center;
+    padding-right: 15px;
+}
+
+.attendance-table td:nth-child(2) {
+    width: 35%;
+    text-align: center;
+}
+
+.attendance-table td:nth-child(3) {
+    width: 35%;
+    text-align: center;
+    padding-left: 15px;
 }
 
 .attendance-table tr:hover {

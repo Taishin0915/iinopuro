@@ -74,24 +74,18 @@
                         <thead>
                             <tr>
                                 <th>ユーザー名</th>
+                                <th>出勤状況</th>
                                 <th>出勤時刻</th>
-                                <th>運送会社</th>
-                                <th>クローズ件数</th>
-                                <th>スウィング件数</th>
-                                <th>稼働時間</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for data in working_users %}
                             <tr>
                                 <td class="user-name">{{ data.user.username }}</td>
-                                <td class="clock-time">{{ data.clock_in_time|date:"H:i" }}</td>
-                                <td class="carrier-name">{{ data.carrier.carrier_name }}</td>
-                                <td class="close-count">{{ data.close_number }}</td>
-                                <td class="swing-count">{{ data.swing_number }}</td>
-                                <td class="work-duration">
-                                    {{ data.clock_in_time|date:"H:i" }}
+                                <td class="status">
+                                    <span class="status-working">出勤中</span>
                                 </td>
+                                <td class="clock-time">{{ data.clock_in_time|date:"H:i" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -112,11 +106,8 @@
                     <thead>
                         <tr>
                             <th>ユーザー名</th>
-                            <th>状況</th>
+                            <th>出勤状況</th>
                             <th>出勤時刻</th>
-                            <th>運送会社</th>
-                            <th>クローズ件数</th>
-                            <th>スウィング件数</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -137,15 +128,6 @@
                                     -
                                 {% endif %}
                             </td>
-                            <td class="carrier-name">
-                                {% if data.carrier %}
-                                    {{ data.carrier.carrier_name }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td class="close-count">{{ data.close_number }}</td>
-                            <td class="swing-count">{{ data.swing_number }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
