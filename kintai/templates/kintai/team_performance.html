@@ -6,31 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
-    <style>
-        /* マイページに戻るボタンのホバー効果 */
-        .mypage-back-button:hover {
-            background: #45B7B8 !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4) !important;
-        }
-        
-        /* 日付選択フォームのボタンのホバー効果 */
-        .date-form-button:hover {
-            background: rgba(0, 255, 136, 0.3) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3) !important;
-        }
-        
-        /* すべてのボタンに共通のトランジション効果 */
-        button, .mypage-back-button, .date-form-button {
-            transition: all 0.3s ease !important;
-        }
-    </style>
 </head>
 <body>
     <header>
         <h1>{{ title }}</h1>
-        <div class="back-section" style="position: absolute; top: 20px; right: 20px;">
+        <div class="back-section">
 
         </div>
     </header>
@@ -39,17 +19,17 @@
         <!-- 日付選択 -->
         <div class="performance-summary">
             <h3>日付選択</h3>
-            <form method="get" style="display: flex; gap: 10px; align-items: center; justify-content: center;">
-                <label for="date" style="color: #010202;">表示日付:</label>
-                <input type="date" id="date" name="date" value="{{ selected_date_str }}" style="padding: 8px; border: 1px solid #000000; border-radius: 5px; background: #ffffff; color: #000000; font-size: 14px; min-width: 150px;">
-                <button type="submit" class="date-form-button" style="padding: 8px 16px; background: rgba(251, 252, 252, 0.2); border: 1px solid #040505; color: #070808; border-radius: 5px; cursor: pointer;">表示</button>
+            <form method="get" class="date-form">
+                <label for="date" class="date-label">表示日付:</label>
+                <input type="date" id="date" name="date" value="{{ selected_date_str }}" class="date-input">
+                <button type="submit" class="date-form-button">表示</button>
             </form>
         </div>
 
         <!-- 全体統計 -->
         <div class="performance-summary">
             <h3>{{ selected_date|date:"Y年m月d日" }}の全体実績</h3>
-            <p style="color: #888; font-size: 14px; text-align: center; margin-bottom: 15px;">
+            <p class="selected-date-info">
                 選択日: {{ selected_date_str }}
             </p>
             <div class="stats-grid">
@@ -84,50 +64,50 @@
         {% if user_stats %}
         <div class="recent-reports">
             <h3>社員別実績（{{ selected_date|date:"Y年m月d日" }}）</h3>
-            <div class="reports-table" style="display: flex; justify-content: center; overflow-x: auto;">
-                <table style="margin: 0 auto; width: auto; min-width: 800px;">
+            <div class="reports-table team-reports-table">
+                <table class="team-table">
                     <thead>
-                        <tr style="background: rgba(0, 255, 136, 0.1);">
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">社員名</th>
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">キャリア</th>
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">クローズ件数</th>
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">スウィング件数</th>
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">新規件数</th>
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">UPG件数</th>
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">MNP件数</th>
-                            <th style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">合計</th>
+                        <tr class="team-table-header">
+                            <th>社員名</th>
+                            <th>キャリア</th>
+                            <th>クローズ件数</th>
+                            <th>スウィング件数</th>
+                            <th>新規件数</th>
+                            <th>UPG件数</th>
+                            <th>MNP件数</th>
+                            <th>合計</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for user, stats in user_stats.items %}
-                        <tr style="border-bottom: 1px solid rgba(0, 255, 136, 0.2);">
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2); font-weight: bold;">{{ user.username }}</td>
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2);">
+                        <tr class="team-table-row">
+                            <td class="team-table-cell team-table-cell-bold">{{ user.username }}</td>
+                            <td class="team-table-cell">
                                 {% for report in stats.reports %}
                                     {{ report.carrier.carrier_name }}{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                             </td>
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2);">{{ stats.total_close }}</td>
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2);">{{ stats.total_swing }}</td>
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2);">{{ stats.total_new|default:"-" }}</td>
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2);">{{ stats.total_upg|default:"-" }}</td>
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2);">{{ stats.total_mnp|default:"-" }}</td>
-                            <td style="padding: 8px 15px; text-align: center; border: 1px solid rgba(0, 255, 136, 0.2); font-weight: bold; background: rgba(0, 255, 136, 0.1);">
+                            <td class="team-table-cell">{{ stats.total_close }}</td>
+                            <td class="team-table-cell">{{ stats.total_swing }}</td>
+                            <td class="team-table-cell">{{ stats.total_new|default:"-" }}</td>
+                            <td class="team-table-cell">{{ stats.total_upg|default:"-" }}</td>
+                            <td class="team-table-cell">{{ stats.total_mnp|default:"-" }}</td>
+                            <td class="team-table-cell team-table-cell-total">
                                 {{ stats.total_close|add:stats.total_swing|add:stats.total_new|add:stats.total_upg|add:stats.total_mnp }}
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
-                        <tr style="background: rgba(0, 255, 136, 0.2); font-weight: bold;">
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">合計</td>
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">-</td>
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">{{ total_close_all }}</td>
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">{{ total_swing_all }}</td>
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">{{ total_new_all }}</td>
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">{{ total_upg_all }}</td>
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">{{ total_mnp_all }}</td>
-                            <td style="padding: 10px 15px; text-align: center; border: 1px solid #00ff88;">{{ total_close_all|add:total_swing_all|add:total_new_all|add:total_upg_all|add:total_mnp_all }}</td>
+                        <tr class="team-table-footer">
+                            <td class="team-table-cell">合計</td>
+                            <td class="team-table-cell">-</td>
+                            <td class="team-table-cell">{{ total_close_all }}</td>
+                            <td class="team-table-cell">{{ total_swing_all }}</td>
+                            <td class="team-table-cell">{{ total_new_all }}</td>
+                            <td class="team-table-cell">{{ total_upg_all }}</td>
+                            <td class="team-table-cell">{{ total_mnp_all }}</td>
+                            <td class="team-table-cell">{{ total_close_all|add:total_swing_all|add:total_new_all|add:total_upg_all|add:total_mnp_all }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -140,8 +120,8 @@
         {% endif %}
 
         <!-- MyPageに戻るボタン（下部） -->
-        <div class="bottom-navigation" style="margin-top: 40px; text-align: center; padding: 20px;">
-            <a href="{% url 'kintai_top' %}" class="mypage-back-button" style="display: inline-block; padding: 15px 40px; background: #4ECDC4; color: white; text-decoration: none; border-radius: 25px; font-size: 1.1em; font-weight: bold; box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3); transition: all 0.3s ease;">マイページに戻る</a>
+        <div class="bottom-navigation">
+            <a href="{% url 'kintai_top' %}" class="mypage-back-button">マイページに戻る</a>
         </div>
     </main>
     

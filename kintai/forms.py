@@ -12,8 +12,10 @@ class ReportImageForm(forms.ModelForm):
         fields = ['upload_img']
         widgets = {
             'upload_img': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
+                # 'class': 'hidden',  # テスト中: コメントアウト
+                'accept': 'image/*',
+                # 'capture': 'environment',  # テスト中: コメントアウト
+                # 'style': 'display: none !important; visibility: hidden !important;'  # テスト中: コメントアウト
             })
         }
 

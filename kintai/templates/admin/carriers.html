@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+</head>
+<body class="admin-page">
+    <div class="logout-section">
+        <a href="{% url 'logout' %}" class="logout-button">ログアウト</a>
+    </div>
+    
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>{{ title }}</h1>
+            <p>キャリア別成績管理と分析</p>
+        </div>
+        
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="nav-button">ダッシュボード</a>
+            <a href="{% url 'admin_users' %}" class="nav-button">ユーザー管理</a>
+            <a href="{% url 'admin_reports' %}" class="nav-button">稼働管理</a>
+            <a href="{% url 'admin_carriers' %}" class="nav-button">キャリア管理</a>
+        </nav>
+        
+        <div class="admin-content">
+            <!-- 期間選択 -->
+            <div class="period-selector">
+                <h4>表示期間を選択</h4>
+                <div>
+                    <button class="period-btn" data-months="3">3ヶ月</button>
+                    <button class="period-btn" data-months="6">6ヶ月</button>
+                    <button class="period-btn" data-months="12">1年</button>
+                    <button class="period-btn" data-months="24">2年</button>
+                </div>
+                <p class="period-info">
+                    現在の表示期間: {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)
+                </p>
+            </div>
+            
+            {% if carrier_stats %}
+            <div class="carrier-grid">
+                {% for carrier, stats in carrier_stats.items %}
+                <div class="carrier-card">
+                    <div class="carrier-header">
+                        <h3>{{ carrier.carrier_name }}</h3>
+                    </div>
+                    
+                    <!-- 全体統計 -->
+                    <div class="carrier-summary">
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-label">稼働日数</div>
+                                <div class="summary-value">{{ stats.total_work_days }}日</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">総クローズ</div>
+                                <div class="summary-value">{{ stats.total_close }}件</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">新規件数</div>
+                                <div class="summary-value">{{ stats.total_new }}件</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">UPG件数</div>
+                                <div class="summary-value">{{ stats.total_upg }}件</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">MNP件数</div>
+                                <div class="summary-value">{{ stats.total_mnp }}件</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 月別詳細 -->
+                    {% if stats.monthly_stats %}
+                    <div class="monthly-details">
+                        <h4>月別詳細</h4>
+                        <div class="monthly-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>月</th>
+                                        <th>稼働日数</th>
+                                        <th>総クローズ</th>
+                                        <th>新規</th>
+                                        <th>UPG</th>
+                                        <th>MNP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for month, month_stats in stats.monthly_stats.items %}
+                                    <tr>
+                                        <td>{{ month }}</td>
+                                        <td>{{ month_stats.work_days }}日</td>
+                                        <td>{{ month_stats.total_close }}件</td>
+                                        <td>{{ month_stats.new_close }}件</td>
+                                        <td>{{ month_stats.upg_close }}件</td>
+                                        <td>{{ month_stats.mnp_close }}件</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-data">
+                        <p>指定期間内にデータがありません</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-data">
+                <p>キャリアデータがありません。</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- MyPageに戻るボタン（下部） -->
+        <div class="bottom-navigation">
+            <a href="{% url 'kintai_top' %}" class="nav-button">← MyPageに戻る</a>
+        </div>
+    </div>
+    
+    <script>
+        // 期間選択ボタンのイベントリスナー
+        document.addEventListener('DOMContentLoaded', function() {
+            const periodButtons = document.querySelectorAll('.period-btn');
+            const currentMonths = {{ months_back|default:6 }};
+            
+            // 現在の期間ボタンをハイライト
+            periodButtons.forEach(btn => {
+                if (parseInt(btn.dataset.months) === currentMonths) {
+                    btn.style.background = 'rgba(120, 219, 255, 0.4)';
+                    btn.style.color = '#78dbff';
+                    btn.style.borderColor = '#78dbff';
+                    btn.style.boxShadow = '0 0 10px rgba(120, 219, 255, 0.3)';
+                }
+            });
+            
+            // ボタンクリックイベント
+            periodButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const months = this.dataset.months;
+                    const url = new URL(window.location);
+                    url.searchParams.set('months', months);
+                    window.location.href = url.toString();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

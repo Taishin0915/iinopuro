@@ -16,21 +16,43 @@
             <p>{{ user.username }}さん、入店報告をしてください。</p>
         </div>
 
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <div id="image-preview-container" class="photo-container">
-                <img id="preview-image" src="{% static 'kintai/images/no_image.svg' %}" alt="No Image" style="width: 200px; height: 150px; object-fit: contain;">
+        <!-- エラーメッセージ表示 -->
+        {% if error_message %}
+            <div class="error-message">
+                <h3>{{ error_message }}</h3>
             </div>
+        {% endif %}
 
-            <input type="file" accept="image/*" id="photo-upload-input" name="upload_img" capture="user" style="display: none;">
-            
-            <div class="button-group">
-                <label for="photo-upload-input" class="action-button">写真撮影</label>
+        {% if form %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div id="image-preview-container" class="photo-container">
+                    <img id="preview-image" src="{% static 'kintai/images/no_image.svg' %}" alt="No Image" class="preview-image">
+                </div>
+
+                <!-- フォームフィールドを手動でレンダリングしてDjangoの自動UIを回避 -->
+                <!-- テスト中: ファイル選択も可能にするため、capture属性をコメントアウト -->
+                <input type="file" 
+                       accept="image/*" 
+                       id="photo-upload-input" 
+                       name="upload_img" 
+                       <!-- capture="environment" -->
+                       <!-- class="hidden" --> 
+                       multiple="false">
+                       <!-- style="display: none !important; visibility: hidden !important; position: absolute !important; left: -9999px !important;"> -->
                 
-                <button type="submit" class="action-button">報告</button>
+                <div class="button-group">
+                    <button type="button" id="camera-button" class="action-button">写真撮影</button>
+                    
+                    <button type="submit" class="action-button">報告</button>
+                </div>
+            </form>
+        {% else %}
+            <div class="button-group">
+                <a href="{% url 'kintai_top' %}" class="action-button">マイページに戻る</a>
             </div>
-        </form>
+        {% endif %}
         </main>
 
     <script src="{% static 'kintai/script.js' %}"></script>

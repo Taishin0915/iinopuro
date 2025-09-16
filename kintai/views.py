@@ -13,13 +13,50 @@ from django.contrib.admin.views.decorators import staff_member_required
 from core.models import Report, ReportImage, Carrier
 # 🔽 作成したフォームをインポート
 from .forms import ReportImageForm
+
+def get_user_attendance_status(user):
+    """
+    ユーザーの現在の出勤状態を取得する
+    Returns:
+        'CLOCKED_IN': 出勤中
+        'CLOCKED_OUT': 退勤中
+        'NO_RECORD': 記録なし
+    """
+    # 最新の出勤記録を取得
+    last_clock_in = Timestamp.objects.filter(
+        user=user,
+        status='CLOCK_IN'
+    ).order_by('-timestamp').first()
+    
+    # 最新の退勤記録を取得
+    last_clock_out = Timestamp.objects.filter(
+        user=user,
+        status='CLOCK_OUT'
+    ).order_by('-timestamp').first()
+    
+    # 記録がない場合
+    if not last_clock_in and not last_clock_out:
+        return 'NO_RECORD'
+    
+    # 出勤記録がない場合（退勤のみ）
+    if not last_clock_in:
+        return 'CLOCKED_OUT'
+    
+    # 退勤記録がない場合（出勤のみ）
+    if not last_clock_out:
+        return 'CLOCKED_IN'
+    
+    # 両方の記録がある場合、最新の記録を確認
+    if last_clock_in.timestamp > last_clock_out.timestamp:
+        return 'CLOCKED_IN'
+    else:
+        return 'CLOCKED_OUT'
 from .models import Timestamp
 from .forms import ClockOutForm
 from .forms import ClockOutReportForm 
 
 # 🔽 カレンダー取得用
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+# 外部サービス呼び出しのライブラリは起動時のimportを避けるため関数内で遅延importする
 
 
 
@@ -32,6 +69,21 @@ def kintai_view(request):
     """
     # ログインしているユーザーの最新のレポートを1件取得
     latest_report = Report.objects.filter(user=request.user).order_by('-work_date').first()
+    
+    # ユーザーの現在の出勤状態を取得
+    attendance_status = get_user_attendance_status(request.user)
+    
+    # 最新の出勤記録を取得（表示用）
+    last_clock_in = Timestamp.objects.filter(
+        user=request.user,
+        status='CLOCK_IN'
+    ).order_by('-timestamp').first()
+    
+    # 最新の退勤記録を取得（表示用）
+    last_clock_out = Timestamp.objects.filter(
+        user=request.user,
+        status='CLOCK_OUT'
+    ).order_by('-timestamp').first()
 
     # 既存のcontextに、新しいデータを追加
     context = {
@@ -39,6 +91,9 @@ def kintai_view(request):
         'message': '勤怠管理システムへようこそ',
         'user': request.user,      # ◀ ログインユーザー情報を追加
         'report': latest_report,   # ◀ 最新のレポート情報を追加
+        'attendance_status': attendance_status,
+        'last_clock_in': last_clock_in,
+        'last_clock_out': last_clock_out,
     }
     
     return render(request, 'kintai/mypage_top.html', context)
@@ -51,6 +106,15 @@ def kintai_view(request):
 
 @login_required
 def checkin_view(request):
+    # 既に出勤中の場合は出勤できない
+    attendance_status = get_user_attendance_status(request.user)
+    if attendance_status == 'CLOCKED_IN':
+        return render(request, 'kintai/checkin_page.html', {
+            'user': request.user,
+            'form': None,
+            'error_message': '既に出勤済みです。退勤してから再度出勤してください。'
+        })
+    
     if request.method == 'POST':
         form = ReportImageForm(request.POST, request.FILES)
         if form.is_valid():
@@ -312,14 +376,42 @@ def checkout_complete_view(request):
     """
     退勤完了ページを表示するビュー
     """
+    # 最新の出勤記録を取得
+    last_clock_in = Timestamp.objects.filter(
+        user=request.user,
+        status='CLOCK_IN'
+    ).order_by('-timestamp').first()
+    
+    # 「退勤を確定する」ボタンが押された場合
+    if request.method == 'POST':
+        # 退勤記録をデータベースに作成
+        Timestamp.objects.create(
+            user=request.user,
+            status='CLOCK_OUT',
+            timestamp=timezone.now()
+        )
+        # マイページに戻る
+        return redirect('kintai_top')
+    
     context = {
         'user': request.user,
+        'last_clock_in': last_clock_in,
     }
     return render(request, 'kintai/checkout_complete.html', context)
 
 
 @login_required
 def kintai_clockout_view(request):
+    # 出勤していない場合は退勤できない
+    attendance_status = get_user_attendance_status(request.user)
+    if attendance_status != 'CLOCKED_IN':
+        return render(request, 'kintai/checkout_page.html', {
+            'user': request.user,
+            'form': None,
+            'last_clock_in': None,
+            'error_message': '出勤していません。先に出勤してください。'
+        })
+    
     last_clock_in = Timestamp.objects.filter(
         user=request.user,
         status='CLOCK_IN'
@@ -342,7 +434,7 @@ def kintai_clockout_view(request):
                 status='CLOCK_OUT',
                 timestamp=timezone.now()
             )
-            return redirect('kintai_top')
+            return redirect('kintai_checkout_complete')
 
     # 通常通りページを表示する場合 (GETリクエスト)
     else:
@@ -434,11 +526,72 @@ def admin_reports_view(request):
 @staff_member_required
 def admin_carriers_view(request):
     """キャリア管理画面"""
+    from datetime import date
+    from dateutil.relativedelta import relativedelta
+    from django.db.models import Count, Sum
+    
+    # 期間選択（デフォルトは6ヶ月）
+    months_back = int(request.GET.get('months', 6))
+    end_date = date.today()
+    start_date = end_date - relativedelta(months=months_back)
+    
+    # 全キャリアを取得
     carriers = Carrier.objects.all().order_by('carrier_name')
+    
+    # 各キャリアの統計情報を計算
+    carrier_stats = {}
+    for carrier in carriers:
+        # 指定期間内のレポートを取得
+        reports = Report.objects.filter(
+            carrier=carrier,
+            work_date__gte=start_date,
+            work_date__lte=end_date
+        )
+        
+        # 月別統計
+        monthly_stats = {}
+        for report in reports:
+            month_key = report.work_date.strftime('%Y-%m')
+            if month_key not in monthly_stats:
+                monthly_stats[month_key] = {
+                    'work_days': 0,
+                    'total_close': 0,
+                    'new_close': 0,
+                    'upg_close': 0,
+                    'mnp_close': 0,
+                    'reports': []
+                }
+            
+            monthly_stats[month_key]['work_days'] += 1
+            monthly_stats[month_key]['total_close'] += report.close_number or 0
+            monthly_stats[month_key]['new_close'] += report.new_close_number or 0
+            monthly_stats[month_key]['upg_close'] += report.upg_close_number or 0
+            monthly_stats[month_key]['mnp_close'] += report.mnp_close_number or 0
+            monthly_stats[month_key]['reports'].append(report)
+        
+        # 全体統計
+        total_work_days = reports.count()
+        total_close = sum(report.close_number or 0 for report in reports)
+        total_new = sum(report.new_close_number or 0 for report in reports)
+        total_upg = sum(report.upg_close_number or 0 for report in reports)
+        total_mnp = sum(report.mnp_close_number or 0 for report in reports)
+        
+        carrier_stats[carrier] = {
+            'monthly_stats': monthly_stats,
+            'total_work_days': total_work_days,
+            'total_close': total_close,
+            'total_new': total_new,
+            'total_upg': total_upg,
+            'total_mnp': total_mnp,
+        }
     
     context = {
         'title': 'キャリア管理',
         'carriers': carriers,
+        'carrier_stats': carrier_stats,
+        'months_back': months_back,
+        'start_date': start_date,
+        'end_date': end_date,
     }
     
     return render(request, 'admin/carriers.html', context)
@@ -593,6 +746,9 @@ def admin_user_performance_view(request, user_id):
 
 
 def get_calendar_from_sheet():
+    # 遅延importにより起動時のネットワーク依存エラーを回避
+    import gspread
+    from oauth2client.service_account import ServiceAccountCredentials
     scope = ["https://spreadsheets.google.com/feeds",
              "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)

@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.conf import settings # Userモデルを扱うための推奨設定
+from django import forms
 
 
 class Carrier(models.Model):
@@ -51,3 +52,8 @@ class ReportImage(models.Model):
 
     def __str__(self):
         return f"Image for Report ID: {self.report.id}"
+
+
+
+
+# ... (既存のReportImageFormはそのまま) ...

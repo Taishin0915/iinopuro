@@ -10,8 +10,8 @@
 <body>
     <header>
         <h1>{{ title }}</h1>
-        <div class="logout-section" style="position: absolute; top: 20px; right: 20px;">
-            <a href="{% url 'logout' %}" class="logout-button" style="display: inline-block; padding: 8px 16px; background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.5); color: #ff6b6b; text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-size: 0.9em;">ログアウト</a>
+        <div class="logout-section">
+            <a href="{% url 'logout' %}" class="logout-button">ログアウト</a>
         </div>
     </header>
 
@@ -21,13 +21,43 @@
             <h2>{{ user.username }}さん</h2>
         </div>
         
+        <!-- 現在の出勤状態表示 -->
+        <div class="attendance-status">
+            {% if attendance_status == 'CLOCKED_IN' %}
+                <h3 style="color: #00c500;">🟢 出勤中</h3>
+                {% if last_clock_in %}
+                    <p>{{ last_clock_in.timestamp|date:"Y年m月d日 H:i" }}</p>
+                {% endif %}
+            {% elif attendance_status == 'CLOCKED_OUT' %}
+                <h3 style="color: #ff6b6b;">🔴 退勤中</h3>
+                {% if last_clock_out %}
+                    <p>{{ last_clock_out.timestamp|date:"Y年m月d日 H:i" }}</p>
+                {% endif %}
+            {% else %}
+                <h3 style="color: #ffa500;">🟡 記録なし</h3>
+                <p>まだ出勤・退勤の記録がありません</p>
+            {% endif %}
+        </div>
+        
         <div class="button-group">
-            <a href="{% url 'kintai_checkin' %}" class="action-button">出勤</a>
-            <a href="{% url 'kintai_checkout' %}" class="action-button">退勤</a>
+            <!-- 出勤ボタン: 出勤中でない場合のみ表示 -->
+            {% if attendance_status != 'CLOCKED_IN' %}
+                <a href="{% url 'kintai_checkin' %}" class="action-button">出勤</a>
+            {% else %}
+                <span class="action-button disabled">出勤済み</span>
+            {% endif %}
+            
+            <!-- 退勤ボタン: 出勤中の場合のみ表示 -->
+            {% if attendance_status == 'CLOCKED_IN' %}
+                <a href="{% url 'kintai_checkout' %}" class="action-button">退勤</a>
+            {% else %}
+                <span class="action-button disabled">退勤不可</span>
+            {% endif %}
+            
             <a href="{% url 'kintai_performance' %}" class="action-button">個人実績</a>
             <a href="{% url 'team_performance' %}" class="action-button">実績一覧</a>
             {% if user.is_staff %}
-            <a href="{% url 'admin_dashboard' %}" class="action-button" style="background: rgba(0, 255, 136, 0.2); border: 1px solid rgba(32, 182, 112, 0.5); color: #11c873;">管理者画面</a>
+            <a href="{% url 'admin_dashboard' %}" class="action-button admin-button">管理者画面</a>
             {% endif %}
         </div>
     </main>
