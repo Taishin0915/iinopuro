@@ -30,8 +30,8 @@
                     <span class="stat-value">{{ total_close_number }}件</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">総MNP数</span>
-                    <span class="stat-value">{{ total_mnp_close_number }}件</span>
+                    <span class="stat-label">生産性</span>
+                    <span class="stat-value">{{ productivity }}件/日</span>
                 </div>
             </div>
         </div>
@@ -45,10 +45,10 @@
             <div class="period-selector" style="margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; backdrop-filter: blur(10px);">
                 <h4 style="margin-bottom: 15px; color: #080808; text-align: center;">表示期間を選択</h4>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                    <button class="period-btn" data-months="1" style="padding: 8px 16px; background: rgba(247, 249, 248, 0.2); border: 1px solid #030303; color: #020202; border-radius: 5px; cursor: pointer; transition: all 0.3s;">1ヶ月</button>
                     <button class="period-btn" data-months="3" style="padding: 8px 16px; background: rgba(251, 252, 251, 0.2); border: 1px solid #050505; color: #050505; border-radius: 5px; cursor: pointer; transition: all 0.3s;">3ヶ月</button>
                     <button class="period-btn" data-months="6" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.2); border: 1px solid #020202; color: #050505; border-radius: 5px; cursor: pointer; transition: all 0.3s;">6ヶ月</button>
                     <button class="period-btn" data-months="12" style="padding: 8px 16px; background: rgba(254, 252, 252, 0.2); border: 1px solid #070707; color: #090909; border-radius: 5px; cursor: pointer; transition: all 0.3s;">1年</button>
-                    <button class="period-btn" data-months="24" style="padding: 8px 16px; background: rgba(247, 249, 248, 0.2); border: 1px solid #030303; color: #020202; border-radius: 5px; cursor: pointer; transition: all 0.3s;">2年</button>
                 </div>
                 <p style="margin-top: 10px; color: #888; font-size: 14px; text-align: center;">
                     現在の表示期間: {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)

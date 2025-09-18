@@ -26,12 +26,12 @@
             {% if attendance_status == 'CLOCKED_IN' %}
                 <h3 style="color: #00c500;">🟢 出勤中</h3>
                 {% if last_clock_in %}
-                    <p>{{ last_clock_in.timestamp|date:"Y年m月d日 H:i" }}</p>
+                    <p>{{ last_clock_in.created_at|date:"Y年m月d日 H:i" }}</p>
                 {% endif %}
             {% elif attendance_status == 'CLOCKED_OUT' %}
                 <h3 style="color: #ff6b6b;">🔴 退勤中</h3>
-                {% if last_clock_out %}
-                    <p>{{ last_clock_out.timestamp|date:"Y年m月d日 H:i" }}</p>
+                {% if last_clock_in and last_clock_in.clock_out_time %}
+                    <p>{{ last_clock_in.clock_out_time|date:"Y年m月d日 H:i" }}</p>
                 {% endif %}
             {% else %}
                 <h3 style="color: #ffa500;">🟡 記録なし</h3>

@@ -31,26 +31,6 @@
                 {% for user, stats in user_stats.items %}
                 <div class="user-card">
                     <div class="user-name">{{ user.username }}</div>
-                    
-                    <div class="user-stats">
-                        <div class="stat-item">
-                            <div class="stat-label">総レポート数</div>
-                            <div class="stat-value">{{ stats.total_reports }}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">総クローズ数</div>
-                            <div class="stat-value">{{ stats.total_close }}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">総MNP数</div>
-                            <div class="stat-value">{{ stats.total_mnp }}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">最終レポート</div>
-                            <div class="stat-value">{{ stats.last_report_date|date:"m/d" }}</div>
-                        </div>
-                    </div>
-                    
                     <a href="{% url 'admin_user_performance' user.id %}" class="user-button">個人実績を見る</a>
                 </div>
                 {% endfor %}

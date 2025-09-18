@@ -23,7 +23,7 @@
         {% elif last_clock_in %}
             <div class="performance-summary">
                 <h3>最終出勤時刻</h3>
-                <p class="clock-time">{{ last_clock_in.timestamp|date:"Y年m月d日 H:i" }}</p>
+                <p class="clock-time">{{ last_clock_in.created_at|date:"Y年m月d日 H:i" }}</p>
             </div>
     
             <div class="button-group">

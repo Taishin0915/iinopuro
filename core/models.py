@@ -25,6 +25,7 @@ class Report(models.Model):
     carrier = models.ForeignKey(Carrier, on_delete=models.CASCADE)
     work_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    clock_out_time = models.DateTimeField(null=True, blank=True)
     
     # 両方のレポートで共通のフィールド
     close_number = models.IntegerField()

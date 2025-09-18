@@ -33,14 +33,25 @@ def get_user_attendance_status(user):
         work_date=today
     ).order_by('-created_at')
     
+    print(f"DEBUG: User {user.username}, Today: {today}")
+    print(f"DEBUG: Found {today_reports.count()} reports for today")
+    
     if not today_reports.exists():
+        print("DEBUG: No reports found, returning NO_RECORD")
         return 'NO_RECORD'
     
     # 最新のレポートを取得
     latest_report = today_reports.first()
+    print(f"DEBUG: Latest report: {latest_report}")
+    print(f"DEBUG: clock_out_time: {latest_report.clock_out_time}")
     
-    # レポートが作成された時刻を出勤時刻として扱う
-    return 'CLOCKED_IN'
+    # 退勤時刻が設定されているかチェック
+    if latest_report.clock_out_time:
+        print("DEBUG: clock_out_time exists, returning CLOCKED_OUT")
+        return 'CLOCKED_OUT'
+    else:
+        print("DEBUG: clock_out_time is None, returning CLOCKED_IN")
+        return 'CLOCKED_IN'
 # 外部サービス呼び出しのライブラリは起動時のimportを避けるため関数内で遅延importする
 
 
@@ -57,18 +68,15 @@ def kintai_view(request):
     
     # ユーザーの現在の出勤状態を取得
     attendance_status = get_user_attendance_status(request.user)
+    print(f"DEBUG: Final attendance_status: {attendance_status}")
     
-    # 最新の出勤記録を取得（表示用）
-    last_clock_in = Timestamp.objects.filter(
+    # 今日の最新のレポートを取得（表示用）
+    today = date.today()
+    last_clock_in = Report.objects.filter(
         user=request.user,
-        status='CLOCK_IN'
-    ).order_by('-timestamp').first()
-    
-    # 最新の退勤記録を取得（表示用）
-    last_clock_out = Timestamp.objects.filter(
-        user=request.user,
-        status='CLOCK_OUT'
-    ).order_by('-timestamp').first()
+        work_date=today
+    ).order_by('-created_at').first()
+    print(f"DEBUG: last_clock_in: {last_clock_in}")
 
     # 既存のcontextに、新しいデータを追加
     context = {
@@ -78,7 +86,6 @@ def kintai_view(request):
         'report': latest_report,   # ◀ 最新のレポート情報を追加
         'attendance_status': attendance_status,
         'last_clock_in': last_clock_in,
-        'last_clock_out': last_clock_out,
     }
     
     return render(request, 'kintai/mypage_top.html', context)
@@ -113,18 +120,14 @@ def checkin_view(request):
                 close_number=0,
                 swing_number=0,
             )
+            print(f"DEBUG: Created new report: {new_report}")
+            print(f"DEBUG: Report clock_out_time: {new_report.clock_out_time}")
             report_image = form.save(commit=False)
             report_image.report = new_report
             report_image.save()
             
-            # --- ▼ ここから追記 ▼ ---
-            # 同時に出勤(CLOCK_IN)のTimestampも作成する
-            Timestamp.objects.create(
-                user=request.user,
-                status='CLOCK_IN',
-                timestamp=timezone.now()
-            )
-            # --- ▲ ここまで追記 ▲ ---
+            # Reportモデルにclock_out_timeは設定しない（出勤時はnullのまま）
+            # 退勤時にclock_out_timeを設定する
             
             return redirect('kintai_complete') 
 
@@ -149,18 +152,18 @@ def checkin_complete_view(request):
 
 @login_required
 def checkout_view(request):
-    last_clock_in = Timestamp.objects.filter(
+    # 今日の最新のレポートを取得
+    today = date.today()
+    last_clock_in = Report.objects.filter(
         user=request.user,
-        status='CLOCK_IN'
-    ).order_by('-timestamp').first()
+        work_date=today
+    ).order_by('-created_at').first()
 
     if request.method == 'POST':
-        # 退勤記録をデータベースに作成
-        Timestamp.objects.create(
-            user=request.user,
-            status='CLOCK_OUT',
-            timestamp=timezone.now()
-        )
+        # Reportモデルのclock_out_timeを設定
+        if last_clock_in:
+            last_clock_in.clock_out_time = timezone.now()
+            last_clock_in.save()
         # 完了したらマイページに戻る
         return redirect('kintai_top')
 
@@ -199,6 +202,10 @@ def performance_view(request):
     total_close_number = sum(report.close_number or 0 for report in reports)
     total_mnp_close_number = sum(report.mnp_close_number or 0 for report in reports)
     
+    # 生産性を計算（総クローズ件数÷稼働日数）
+    productivity = round(total_close_number / total_reports, 2) if total_reports > 0 else 0
+    
+    
     # 月別統計
     monthly_stats = {}
     for report in reports:
@@ -218,6 +225,7 @@ def performance_view(request):
         monthly_stats[month_key]['upg_close_number'] += report.upg_close_number or 0
         monthly_stats[month_key]['mnp_close_number'] += report.mnp_close_number or 0
         monthly_stats[month_key]['count'] += 1
+
 
     # グラフ用データ（ラベルは年月順にソート）
     monthly_labels = sorted(monthly_stats.keys())
@@ -251,6 +259,7 @@ def performance_view(request):
         'total_reports': total_reports,
         'total_close_number': total_close_number,
         'total_mnp_close_number': total_mnp_close_number,
+        'productivity': productivity,
         'monthly_stats': monthly_stats,
         # グラフ用
         'monthly_labels': monthly_labels,
@@ -366,7 +375,7 @@ def checkout_complete_view(request):
         user=request.user,
         status='CLOCK_IN'
     ).order_by('-timestamp').first()
-    
+
     # 「退勤を確定する」ボタンが押された場合
     if request.method == 'POST':
         # 退勤記録をデータベースに作成
@@ -397,28 +406,22 @@ def kintai_clockout_view(request):
             'error_message': '出勤していません。先に出勤してください。'
         })
     
-    last_clock_in = Timestamp.objects.filter(
+    # 今日の最新のレポートを取得
+    today = date.today()
+    last_clock_in = Report.objects.filter(
         user=request.user,
-        status='CLOCK_IN'
-    ).order_by('-timestamp').first()
+        work_date=today
+    ).order_by('-created_at').first()
 
     # 「退勤を確定」ボタンが押された場合 (POSTリクエスト)
     if request.method == 'POST':
         form = ClockOutReportForm(request.POST)
         if form.is_valid():
-            # 1. フォームのデータを元にReportオブジェクトを作成
-            report = form.save(commit=False) # DBにはまだ保存しない
-            report.user = request.user
-            report.work_date = timezone.now().date()
-            report.report_type = 'WIND' # レポートタイプを固定（必要に応じて変更）
-            report.save() # ReportをDBに保存
-
-            # 2. 退勤記録(Timestamp)をDBに作成
-            Timestamp.objects.create(
-                user=request.user,
-                status='CLOCK_OUT',
-                timestamp=timezone.now()
-            )
+            # 既存のレポートに退勤時刻を設定
+            if last_clock_in:
+                last_clock_in.clock_out_time = timezone.now()
+                last_clock_in.save()
+            
             return redirect('kintai_checkout_complete')
 
     # 通常通りページを表示する場合 (GETリクエスト)
