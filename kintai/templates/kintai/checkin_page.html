@@ -3,10 +3,37 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>入店報告</title>
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
 </head>
 <body>
+    <!-- ハンバーガーメニュー -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="hamburger-icon">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </div>
+    </div>
+
+        <!-- サイドバー -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-close-button" id="sidebarCloseButton">
+                <div class="close-icon">
+                    <div class="close-line"></div>
+                    <div class="close-line"></div>
+                    <div class="close-line"></div>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <a href="{% url 'logout' %}" class="sidebar-logout-button">ログアウト</a>
+            </div>
+        </div>
+
+    <!-- サイドバーオーバーレイ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <header>
         <h1>入店報告</h1>
     </header>

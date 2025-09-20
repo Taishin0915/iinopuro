@@ -42,29 +42,47 @@
             <h3>月別統計</h3>
             
             <!-- 期間選択スライダー -->
-            <div class="period-selector" style="margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; backdrop-filter: blur(10px);">
-                <h4 style="margin-bottom: 15px; color: #080808; text-align: center;">表示期間を選択</h4>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                    <button class="period-btn" data-months="1" style="padding: 8px 16px; background: rgba(247, 249, 248, 0.2); border: 1px solid #030303; color: #020202; border-radius: 5px; cursor: pointer; transition: all 0.3s;">1ヶ月</button>
-                    <button class="period-btn" data-months="3" style="padding: 8px 16px; background: rgba(251, 252, 251, 0.2); border: 1px solid #050505; color: #050505; border-radius: 5px; cursor: pointer; transition: all 0.3s;">3ヶ月</button>
-                    <button class="period-btn" data-months="6" style="padding: 8px 16px; background: rgba(255, 255, 255, 0.2); border: 1px solid #020202; color: #050505; border-radius: 5px; cursor: pointer; transition: all 0.3s;">6ヶ月</button>
-                    <button class="period-btn" data-months="12" style="padding: 8px 16px; background: rgba(254, 252, 252, 0.2); border: 1px solid #070707; color: #090909; border-radius: 5px; cursor: pointer; transition: all 0.3s;">1年</button>
+            <div class="period-selector">
+                <div class="period-header">
+                    <h4>表示期間を選択</h4>
+                    <p class="period-info">
+                        現在の表示期間: {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)
+                    </p>
                 </div>
-                <p style="margin-top: 10px; color: #888; font-size: 14px; text-align: center;">
-                    現在の表示期間: {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)
-                </p>
+                <div class="period-buttons">
+                    <button class="period-btn" data-months="1">1ヶ月</button>
+                    <button class="period-btn" data-months="3">3ヶ月</button>
+                    <button class="period-btn" data-months="6">6ヶ月</button>
+                    <button class="period-btn" data-months="12">1年</button>
+                </div>
             </div>
             
-            <!-- グラフ: 月別合計（クローズ/新規/アップグレード/MNP） -->
-            <div class="performance-summary" style="padding: 12px 16px;">
-                <h3>月別合計（クローズ/新規/UPG/MNP）</h3>
-                <canvas id="monthlyTotalsChart"></canvas>
-            </div>
-
-            <!-- グラフ: 月別生産性（平均） -->
-            <div class="performance-summary" style="padding: 12px 16px;">
-                <h3>月別生産性</h3>
-                <canvas id="monthlyAvgChart"></canvas>
+            <!-- グラフ: 月別実績（出勤日数・MNP件数・生産性） -->
+            <div class="chart-container">
+                <h3 class="chart-title">月別実績（出勤日数・MNP件数・生産性）</h3>
+                <div style="margin-bottom: 16px; padding: 12px; background: #f0f9ff; border-left: 4px solid #10b981; border-radius: 4px;">
+                    <p style="margin: 0; font-size: 0.9em; color: #374151; line-height: 1.4;">
+                        <strong>生産性について:</strong> 生産性 = 総クローズ件数 ÷ 出勤日数<br>
+                        <span style="color: #6b7280; font-size: 0.85em;">1日あたりの平均クローズ件数を表します。数値が高いほど効率的に業務をこなしていることを示します。</span>
+                    </p>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2563eb;"></div>
+                        <span>出勤日数</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f59e0b;"></div>
+                        <span>MNP件数</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #10b981;"></div>
+                        <span>生産性（総クローズ件数÷出勤日数）</span>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="monthlyPerformanceChart"></canvas>
+                </div>
             </div>
 
             <div class="monthly-grid">
@@ -86,21 +104,21 @@
         {% if reports %}
         <div class="recent-reports">
             <h3>最新レポート一覧</h3>
-            <div class="reports-table" style="display: flex; justify-content: center;">
-                <table style="margin: 0 auto; width: auto;">
+            <div class="reports-table">
+                <table class="reports-table-content">
                     <thead>
                         <tr>
-                            <th style="padding: 8px 12px; text-align: center;">日付</th>
-                            <th style="padding: 8px 12px; text-align: center;">キャリア</th>
-                            <th style="padding: 8px 12px; text-align: center;">クローズ数</th>
+                            <th>日付</th>
+                            <th>キャリア</th>
+                            <th>クローズ数</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for report in reports %}
                         <tr>
-                            <td style="padding: 6px 12px; text-align: center;">{{ report.work_date|date:"Y/m/d" }}</td>
-                            <td style="padding: 6px 12px; text-align: center;">{{ report.carrier.carrier_name }}</td>
-                            <td style="padding: 6px 12px; text-align: center;">{{ report.close_number }}</td>
+                            <td>{{ report.work_date|date:"Y/m/d" }}</td>
+                            <td>{{ report.carrier.carrier_name }}</td>
+                            <td>{{ report.close_number }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -124,14 +142,9 @@
     <script>
       (function() {
         const labels = {{ monthly_labels|safe }};
-        const closeTotals = {{ monthly_close_totals|safe }};
-        const newCloseTotals = {{ monthly_new_close_totals|safe }};
-        const upgCloseTotals = {{ monthly_upg_close_totals|safe }};
-        const mnpCloseTotals = {{ monthly_mnp_close_totals|safe }};
-        const closeAvg = {{ monthly_close_avg|safe }};
-        const newCloseAvg = {{ monthly_new_close_avg|safe }};
-        const upgCloseAvg = {{ monthly_upg_close_avg|safe }};
-        const mnpCloseAvg = {{ monthly_mnp_close_avg|safe }};
+        const workDays = {{ monthly_work_days|safe }};
+        const mnpTotals = {{ monthly_mnp_totals|safe }};
+        const productivity = {{ monthly_productivity|safe }};
 
         // スライダーボタンのイベントリスナー
         document.querySelectorAll('.period-btn').forEach(btn => {
@@ -155,105 +168,249 @@
           }
         });
 
-        // 合計グラフ（棒）
-        const totalsCtx = document.getElementById('monthlyTotalsChart').getContext('2d');
-        new Chart(totalsCtx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: '総クローズ件数',
-                data: closeTotals,
-                backgroundColor: 'rgba(15, 118, 110, 0.6)',
-                borderColor: 'rgba(15, 118, 110, 0.9)',
-                borderWidth: 1,
-              },
-              {
-                label: '新規件数',
-                data: newCloseTotals,
-                backgroundColor: 'rgba(33, 150, 243, 0.6)',
-                borderColor: 'rgba(33, 150, 243, 0.9)',
-                borderWidth: 1,
-              },
-              {
-                label: 'UPG件数',
-                data: upgCloseTotals,
-                backgroundColor: 'rgba(156, 39, 176, 0.6)',
-                borderColor: 'rgba(156, 39, 176, 0.9)',
-                borderWidth: 1,
-              },
-              {
-                label: 'MNP件数',
-                data: mnpCloseTotals,
-                backgroundColor: 'rgba(255, 152, 0, 0.6)',
-                borderColor: 'rgba(255, 152, 0, 0.9)',
-                borderWidth: 1,
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-            },
-            scales: {
-              y: { beginAtZero: true }
-            }
-          }
-        });
-
-        // 平均グラフ（折れ線）
-        const avgCtx = document.getElementById('monthlyAvgChart').getContext('2d');
-        new Chart(avgCtx, {
+        // 統合グラフ（出勤日数・MNP件数・生産性）
+        const performanceCtx = document.getElementById('monthlyPerformanceChart').getContext('2d');
+        
+        // 生産性データの最大値と最小値を取得
+        const maxProductivity = Math.max(...productivity.filter(v => v !== null));
+        const minProductivity = Math.min(...productivity.filter(v => v !== null));
+        
+        new Chart(performanceCtx, {
           type: 'line',
           data: {
             labels: labels,
             datasets: [
               {
-                label: '平均クローズ件数',
-                data: closeAvg,
-                borderColor: 'rgba(15, 118, 110, 0.95)',
-                backgroundColor: 'rgba(15, 118, 110, 0.15)',
-                borderWidth: 2,
-                tension: 0.25,
-                fill: true
+                label: '出勤日数',
+                data: workDays,
+                type: 'line',
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: '#2563eb',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                yAxisID: 'y',
               },
               {
-                label: '平均新規件数',
-                data: newCloseAvg,
-                borderColor: 'rgba(33, 150, 243, 0.95)',
-                backgroundColor: 'rgba(33, 150, 243, 0.15)',
-                borderWidth: 2,
-                tension: 0.25,
-                fill: true
+                label: 'MNP件数',
+                data: mnpTotals,
+                type: 'line',
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: '#f59e0b',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                yAxisID: 'y',
               },
               {
-                label: '平均UPG件数',
-                data: upgCloseAvg,
-                borderColor: 'rgba(156, 39, 176, 0.95)',
-                backgroundColor: 'rgba(156, 39, 176, 0.15)',
-                borderWidth: 2,
-                tension: 0.25,
-                fill: true
-              },
-              {
-                label: '平均MNP件数',
-                data: mnpCloseAvg,
-                borderColor: 'rgba(255, 152, 0, 0.95)',
-                backgroundColor: 'rgba(255, 152, 0, 0.15)',
-                borderWidth: 2,
-                tension: 0.25,
-                fill: true
+                label: '生産性',
+                data: productivity,
+                type: 'line',
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                yAxisID: 'y1',
               }
             ]
           },
           options: {
             responsive: true,
-            plugins: { legend: { position: 'top' } },
-            scales: { y: { beginAtZero: true } }
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.dataset.label;
+                    const value = context.parsed.y;
+                    if (label === '出勤日数') {
+                      return '出勤日数: ' + value + '日';
+                    } else if (label === 'MNP件数') {
+                      return 'MNP件数: ' + value + '件';
+                    } else if (label === '生産性') {
+                      return '生産性: ' + value.toFixed(2) + '件/日（総クローズ件数÷出勤日数）';
+                    }
+                    return label + ': ' + value;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: '出勤日数・MNP件数',
+                  font: {
+                    size: 12,
+                    weight: 'bold'
+                  },
+                  color: '#374151'
+                },
+                ticks: {
+                  callback: function(value) {
+                    return value;
+                  },
+                  color: '#374151',
+                  font: {
+                    weight: 'bold'
+                  }
+                }
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                beginAtZero: false,
+                min: Math.max(0, minProductivity * 0.8),
+                max: maxProductivity * 1.2,
+                title: {
+                  display: false
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
+                ticks: {
+                  callback: function(value) {
+                    return value.toFixed(1) + '件/日';
+                  },
+                  color: '#10b981',
+                  font: {
+                    weight: 'bold'
+                  }
+                }
+              }
+            }
           }
         });
+        
+        // テーブルのフォントサイズを強制的に設定 - 最強の方法
+        setTimeout(function() {
+            const tableHeaders = document.querySelectorAll('.reports-table-content th');
+            const tableCells = document.querySelectorAll('.reports-table-content td');
+            
+            tableHeaders.forEach(function(th) {
+                th.style.cssText = 'font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;';
+            });
+            
+            tableCells.forEach(function(td) {
+                td.style.cssText = 'font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;';
+            });
+            
+            // モバイル判定
+            if (window.innerWidth <= 768) {
+                tableHeaders.forEach(function(th) {
+                    th.style.cssText = 'font-size: 0.8em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;';
+                });
+                
+                tableCells.forEach(function(td) {
+                    td.style.cssText = 'font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;';
+                });
+            }
+        }, 100);
+        
+        // さらに強力な方法 - 直接スタイルを注入
+        setTimeout(function() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .reports-table-content th {
+                    font-size: 1em !important;
+                    padding: 0px 0px !important;
+                    line-height: 1 !important;
+                    margin: 0 !important;
+                }
+                .reports-table-content td {
+                    font-size: 1em !important;
+                    padding: 0px 0px !important;
+                    line-height: 1 !important;
+                    margin: 0 !important;
+                }
+                @media (max-width: 768px) {
+                    .reports-table-content th {
+                        font-size: 0.8em !important;
+                        padding: 0px 0px !important;
+                    }
+                    .reports-table-content td {
+                        font-size: 1em !important;
+                        padding: 0px 0px !important;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }, 200);
+        
+        // 最強の方法 - 直接HTMLを書き換え
+        setTimeout(function() {
+            const tableHeaders = document.querySelectorAll('.reports-table-content th');
+            const tableCells = document.querySelectorAll('.reports-table-content td');
+            
+            tableHeaders.forEach(function(th) {
+                th.setAttribute('style', 'font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;');
+            });
+            
+            tableCells.forEach(function(td) {
+                td.setAttribute('style', 'font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;');
+            });
+            
+            // モバイル判定
+            if (window.innerWidth <= 768) {
+                tableHeaders.forEach(function(th) {
+                    th.setAttribute('style', 'font-size: 0.8em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;');
+                });
+                
+                tableCells.forEach(function(td) {
+                    td.setAttribute('style', 'font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;');
+                });
+            }
+        }, 300);
+        
+        // 超最強の方法 - 直接HTMLを書き換え
+        setTimeout(function() {
+            const tableHeaders = document.querySelectorAll('.reports-table-content th');
+            const tableCells = document.querySelectorAll('.reports-table-content td');
+            
+            tableHeaders.forEach(function(th) {
+                th.outerHTML = th.outerHTML.replace(/style="[^"]*"/, 'style="font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;"');
+            });
+            
+            tableCells.forEach(function(td) {
+                td.outerHTML = td.outerHTML.replace(/style="[^"]*"/, 'style="font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;"');
+            });
+            
+            // モバイル判定
+            if (window.innerWidth <= 768) {
+                const newTableHeaders = document.querySelectorAll('.reports-table-content th');
+                const newTableCells = document.querySelectorAll('.reports-table-content td');
+                
+                newTableHeaders.forEach(function(th) {
+                    th.outerHTML = th.outerHTML.replace(/style="[^"]*"/, 'style="font-size: 0.8em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;"');
+                });
+                
+                newTableCells.forEach(function(td) {
+                    td.outerHTML = td.outerHTML.replace(/style="[^"]*"/, 'style="font-size: 1em !important; padding: 0px 0px !important; line-height: 1 !important; margin: 0 !important;"');
+                });
+            }
+        }, 500);
       })();
     </script>
     {% endif %}

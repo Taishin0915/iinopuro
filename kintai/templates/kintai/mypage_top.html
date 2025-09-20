@@ -3,16 +3,39 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
 </head>
 <body>
+    <!-- ハンバーガーメニュー -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="hamburger-icon">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </div>
+    </div>
+
+        <!-- サイドバー -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-close-button" id="sidebarCloseButton">
+                <div class="close-icon">
+                    <div class="close-line"></div>
+                    <div class="close-line"></div>
+                    <div class="close-line"></div>
+                </div>
+            </div>
+            <div class="sidebar-content">
+                <a href="{% url 'logout' %}" class="sidebar-logout-button">ログアウト</a>
+            </div>
+        </div>
+
+    <!-- サイドバーオーバーレイ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <header>
         <h1>{{ title }}</h1>
-        <div class="logout-section">
-            <a href="{% url 'logout' %}" class="logout-button">ログアウト</a>
-        </div>
     </header>
 
     <main>
@@ -24,18 +47,18 @@
         <!-- 現在の出勤状態表示 -->
         <div class="attendance-status">
             {% if attendance_status == 'CLOCKED_IN' %}
-                <h3 style="color: #00c500;">🟢 出勤中</h3>
+                <h3 class="status-text clocked-in">出勤中</h3>
                 {% if last_clock_in %}
-                    <p>{{ last_clock_in.created_at|date:"Y年m月d日 H:i" }}</p>
+                    <p class="status-time">{{ last_clock_in.created_at|date:"Y年m月d日 H:i" }}</p>
                 {% endif %}
             {% elif attendance_status == 'CLOCKED_OUT' %}
-                <h3 style="color: #ff6b6b;">🔴 退勤中</h3>
+                <h3 class="status-text clocked-out">退勤中</h3>
                 {% if last_clock_in and last_clock_in.clock_out_time %}
-                    <p>{{ last_clock_in.clock_out_time|date:"Y年m月d日 H:i" }}</p>
+                    <p class="status-time">{{ last_clock_in.clock_out_time|date:"Y年m月d日 H:i" }}</p>
                 {% endif %}
             {% else %}
-                <h3 style="color: #ffa500;">🟡 記録なし</h3>
-                <p>まだ出勤・退勤の記録がありません</p>
+                <h3 class="status-text no-record">記録なし</h3>
+                <p class="status-time">まだ出勤・退勤の記録がありません</p>
             {% endif %}
         </div>
         

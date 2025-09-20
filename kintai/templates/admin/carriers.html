@@ -28,16 +28,18 @@
         <div class="admin-content">
             <!-- 期間選択 -->
             <div class="period-selector">
-                <h4>表示期間を選択</h4>
-                <div>
+                <div class="period-header">
+                    <h4>表示期間を選択</h4>
+                    <p class="period-info">
+                        現在の表示期間: {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)
+                    </p>
+                </div>
+                <div class="period-buttons">
                     <button class="period-btn" data-months="3">3ヶ月</button>
                     <button class="period-btn" data-months="6">6ヶ月</button>
                     <button class="period-btn" data-months="12">1年</button>
                     <button class="period-btn" data-months="24">2年</button>
                 </div>
-                <p class="period-info">
-                    現在の表示期間: {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)
-                </p>
             </div>
             
             {% if carrier_stats %}

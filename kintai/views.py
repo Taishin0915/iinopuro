@@ -229,26 +229,16 @@ def performance_view(request):
 
     # グラフ用データ（ラベルは年月順にソート）
     monthly_labels = sorted(monthly_stats.keys())
-    monthly_close_totals = [monthly_stats[m]['close_number'] for m in monthly_labels]
-    monthly_new_close_totals = [monthly_stats[m]['new_close_number'] for m in monthly_labels]
-    monthly_upg_close_totals = [monthly_stats[m]['upg_close_number'] for m in monthly_labels]
-    monthly_mnp_close_totals = [monthly_stats[m]['mnp_close_number'] for m in monthly_labels]
     
-    # 生産性（平均値）: 月ごとの平均クローズ数と各種クローズ数
-    monthly_close_avg = [
+    # 出勤日数（月ごとのレポート数）
+    monthly_work_days = [monthly_stats[m]['count'] for m in monthly_labels]
+    
+    # MNP件数（月ごとのMNP件数合計）
+    monthly_mnp_totals = [monthly_stats[m]['mnp_close_number'] for m in monthly_labels]
+    
+    # 生産性（月ごとの総クローズ件数÷出勤日数）
+    monthly_productivity = [
         (monthly_stats[m]['close_number'] / monthly_stats[m]['count']) if monthly_stats[m]['count'] else 0
-        for m in monthly_labels
-    ]
-    monthly_new_close_avg = [
-        (monthly_stats[m]['new_close_number'] / monthly_stats[m]['count']) if monthly_stats[m]['count'] else 0
-        for m in monthly_labels
-    ]
-    monthly_upg_close_avg = [
-        (monthly_stats[m]['upg_close_number'] / monthly_stats[m]['count']) if monthly_stats[m]['count'] else 0
-        for m in monthly_labels
-    ]
-    monthly_mnp_close_avg = [
-        (monthly_stats[m]['mnp_close_number'] / monthly_stats[m]['count']) if monthly_stats[m]['count'] else 0
         for m in monthly_labels
     ]
 
@@ -263,14 +253,9 @@ def performance_view(request):
         'monthly_stats': monthly_stats,
         # グラフ用
         'monthly_labels': monthly_labels,
-        'monthly_close_totals': monthly_close_totals,
-        'monthly_new_close_totals': monthly_new_close_totals,
-        'monthly_upg_close_totals': monthly_upg_close_totals,
-        'monthly_mnp_close_totals': monthly_mnp_close_totals,
-        'monthly_close_avg': monthly_close_avg,
-        'monthly_new_close_avg': monthly_new_close_avg,
-        'monthly_upg_close_avg': monthly_upg_close_avg,
-        'monthly_mnp_close_avg': monthly_mnp_close_avg,
+        'monthly_work_days': monthly_work_days,
+        'monthly_mnp_totals': monthly_mnp_totals,
+        'monthly_productivity': monthly_productivity,
         # スライダー用
         'months_back': months_back,
         'start_date': start_date,
