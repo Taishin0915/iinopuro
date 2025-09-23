@@ -6,6 +6,253 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <style>
+        /* 社員別実績のスマホ用スタイル */
+        .team-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .team-header {
+            background: #10b981;
+            border: 1px solid #059669;
+            border-radius: 8px;
+            padding: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr;
+            gap: 4px;
+            align-items: center;
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 0.7em;
+        }
+        
+        .team-header-name { text-align: left; }
+        .team-header-carrier { text-align: left; }
+        .team-header-swing { text-align: center; }
+        .team-header-new { text-align: center; }
+        .team-header-upg { text-align: center; }
+        .team-header-mnp { text-align: center; }
+        .team-header-total { text-align: center; }
+        
+        .team-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr;
+            gap: 4px;
+            align-items: center;
+        }
+        
+        .team-name {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.8em;
+            text-align: left;
+        }
+        
+        .team-carrier {
+            color: #6b7280;
+            font-size: 0.7em;
+            text-align: left;
+        }
+        
+        .team-swing, .team-new, .team-upg, .team-mnp {
+            color: #374151;
+            font-size: 0.8em;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .team-total {
+            font-weight: 600;
+            color: #059669;
+            font-size: 0.8em;
+            text-align: center;
+        }
+        
+        .team-total-row {
+            background: #f8fafc;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr;
+            gap: 4px;
+            align-items: center;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.8em;
+        }
+        
+        .team-total-name { text-align: left; }
+        .team-total-carrier { text-align: left; }
+        .team-total-swing, .team-total-new, .team-total-upg, .team-total-mnp { text-align: center; }
+        .team-total-sum { text-align: center; color: #059669; }
+        
+        /* タブレット用（768px以上） */
+        @media (min-width: 768px) {
+            .team-stats-grid {
+                gap: 12px;
+            }
+            
+            .team-header {
+                padding: 12px;
+                gap: 8px;
+                font-size: 0.8em;
+            }
+            
+            .team-card {
+                padding: 12px;
+                gap: 8px;
+            }
+            
+            .team-name, .team-swing, .team-new, .team-upg, .team-mnp, .team-total {
+                font-size: 0.9em;
+            }
+            
+            .team-carrier {
+                font-size: 0.8em;
+            }
+            
+            .team-total-row {
+                padding: 12px;
+                gap: 8px;
+                font-size: 0.9em;
+            }
+        }
+        
+        /* デスクトップ用（1024px以上） */
+        @media (min-width: 1024px) {
+            .team-stats-grid {
+                gap: 16px;
+            }
+            
+            .team-header {
+                padding: 16px;
+                gap: 12px;
+                font-size: 0.9em;
+            }
+            
+            .team-card {
+                padding: 16px;
+                gap: 12px;
+            }
+            
+            .team-name, .team-swing, .team-new, .team-upg, .team-mnp, .team-total {
+                font-size: 1em;
+            }
+            
+            .team-carrier {
+                font-size: 0.9em;
+            }
+            
+            .team-total-row {
+                padding: 16px;
+                gap: 12px;
+                font-size: 1em;
+            }
+        }
+        
+        /* 選択日時の表示スタイル */
+        .selected-date-info {
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px 0;
+            text-align: center;
+            color: #0369a1;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        /* 日付選択フォームのスタイル */
+        .date-form {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        
+        .date-label {
+            color: #374151;
+            font-weight: 400;
+            font-size: 10px;
+        }
+        
+        .date-input {
+            padding: 0 4px;
+            border: 1px solid #e5e7eb;
+            border-radius: 3px;
+            font-size: 10px;
+            background: white;
+            transition: border-color 0.3s ease;
+            width: 100px;
+            height: 16px;
+            box-sizing: border-box;
+        }
+        
+        .date-input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+        
+        .date-form-button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 40px;
+            height: 16px;
+            line-height: 16px;
+            box-sizing: border-box;
+        }
+        
+        .date-form-button:hover {
+            background: #059669;
+        }
+        
+        .date-form-button:active {
+            transform: translateY(1px);
+        }
+        
+        @media (max-width: 768px) {
+            .date-form {
+                gap: 4px;
+            }
+            
+            .date-label {
+                font-size: 10px;
+            }
+            
+            .date-input {
+                font-size: 10px;
+                padding: 0 4px;
+                width: 90px;
+                height: 16px;
+            }
+            
+            .date-form-button {
+                font-size: 10px;
+                padding: 0 6px;
+                height: 16px;
+                line-height: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -30,7 +277,11 @@
         <div class="performance-summary">
             <h3>{{ selected_date|date:"Y年m月d日" }}の全体実績</h3>
             <p class="selected-date-info">
-                選択日: {{ selected_date_str }}
+                選択日: {{ selected_date|date:"Y年m月d日" }}
+            </p>
+            <!-- デバッグ情報 -->
+            <p style="font-size: 12px; color: #666; margin: 8px 0;">
+                デバッグ: selected_date_str = "{{ selected_date_str }}", selected_date = "{{ selected_date }}"
             </p>
             <div class="stats-grid">
                 <div class="stat-item">
@@ -64,53 +315,43 @@
         {% if user_stats %}
         <div class="recent-reports">
             <h3>社員別実績（{{ selected_date|date:"Y年m月d日" }}）</h3>
-            <div class="reports-table team-reports-table">
-                <table class="team-table">
-                    <thead>
-                        <tr class="team-table-header">
-                            <th>社員名</th>
-                            <th>キャリア</th>
-                            <th>クローズ件数</th>
-                            <th>スウィング件数</th>
-                            <th>新規件数</th>
-                            <th>UPG件数</th>
-                            <th>MNP件数</th>
-                            <th>合計</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user, stats in user_stats.items %}
-                        <tr class="team-table-row">
-                            <td class="team-table-cell team-table-cell-bold">{{ user.username }}</td>
-                            <td class="team-table-cell">
-                                {% for report in stats.reports %}
-                                    {{ report.carrier.carrier_name }}{% if not forloop.last %}, {% endif %}
-                                {% endfor %}
-                            </td>
-                            <td class="team-table-cell">{{ stats.total_close }}</td>
-                            <td class="team-table-cell">{{ stats.total_swing }}</td>
-                            <td class="team-table-cell">{{ stats.total_new|default:"-" }}</td>
-                            <td class="team-table-cell">{{ stats.total_upg|default:"-" }}</td>
-                            <td class="team-table-cell">{{ stats.total_mnp|default:"-" }}</td>
-                            <td class="team-table-cell team-table-cell-total">
-                                {{ stats.total_close|add:stats.total_swing|add:stats.total_new|add:stats.total_upg|add:stats.total_mnp }}
-                            </td>
-                        </tr>
+            <div class="team-stats-grid">
+                <!-- ヘッダー行 -->
+                <div class="team-header">
+                    <div class="team-header-name">社員名</div>
+                    <div class="team-header-carrier">キャリア</div>
+                    <div class="team-header-swing">スウィング</div>
+                    <div class="team-header-new">新規</div>
+                    <div class="team-header-upg">UPG</div>
+                    <div class="team-header-mnp">MNP</div>
+                    <div class="team-header-total">合計クローズ件数</div>
+                </div>
+                <!-- データ行 -->
+                {% for user, stats in user_stats.items %}
+                <div class="team-card">
+                    <div class="team-name">{{ user.username }}</div>
+                    <div class="team-carrier">
+                        {% for report in stats.reports %}
+                            {{ report.carrier.carrier_name }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr class="team-table-footer">
-                            <td class="team-table-cell">合計</td>
-                            <td class="team-table-cell">-</td>
-                            <td class="team-table-cell">{{ total_close_all }}</td>
-                            <td class="team-table-cell">{{ total_swing_all }}</td>
-                            <td class="team-table-cell">{{ total_new_all }}</td>
-                            <td class="team-table-cell">{{ total_upg_all }}</td>
-                            <td class="team-table-cell">{{ total_mnp_all }}</td>
-                            <td class="team-table-cell">{{ total_close_all|add:total_swing_all|add:total_new_all|add:total_upg_all|add:total_mnp_all }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
+                    </div>
+                    <div class="team-swing">{{ stats.total_swing }}</div>
+                    <div class="team-new">{{ stats.total_new|default:"-" }}</div>
+                    <div class="team-upg">{{ stats.total_upg|default:"-" }}</div>
+                    <div class="team-mnp">{{ stats.total_mnp|default:"-" }}</div>
+                    <div class="team-total">{{ stats.total_new|add:stats.total_upg|add:stats.total_mnp }}</div>
+                </div>
+                {% endfor %}
+                <!-- 合計行 -->
+                <div class="team-total-row">
+                    <div class="team-total-name">合計</div>
+                    <div class="team-total-carrier">-</div>
+                    <div class="team-total-swing">{{ total_swing_all }}</div>
+                    <div class="team-total-new">{{ total_new_all }}</div>
+                    <div class="team-total-upg">{{ total_upg_all }}</div>
+                    <div class="team-total-mnp">{{ total_mnp_all }}</div>
+                    <div class="team-total-sum">{{ total_new_all|add:total_upg_all|add:total_mnp_all }}</div>
+                </div>
             </div>
         </div>
         {% else %}

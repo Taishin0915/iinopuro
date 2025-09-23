@@ -1,80 +1,413 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang = "ja">
+<html lang="ja">
 <head>
-     <meta charset=" UTF-8">
-     <title>退勤報告</title>
-     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退勤報告</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <style>
+        /* スマホ用退勤報告ページのスタイル */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .checkout-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .checkout-title {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .checkout-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .checkout-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .clock-in-info {
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .clock-in-label {
+            color: #0369a1;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+        }
+        
+        .clock-in-time {
+            color: #0c4a6e;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .form-input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        .form-input[type="number"]::-webkit-outer-spin-button,
+        .form-input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* J:COM専用フィールドの中央揃え */
+        .jcom-field .form-input,
+        .jcom-field .form-select {
+            text-align: center;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+            width: 120%;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            width: 120%;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .error-message h3 {
+            color: #dc2626;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        .no-attendance {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 24px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .no-attendance h1 {
+            color: #dc2626;
+            font-size: 24px;
+            margin: 0 0 16px 0;
+        }
+        
+        .no-attendance h2 {
+            color: #6b7280;
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        /* タブレット用（768px以上） */
+        @media (min-width: 768px) {
+            .checkout-container {
+                padding: 40px;
+                max-width: 600px;
+            }
+            
+            .checkout-title {
+                font-size: 36px;
+            }
+            
+            .checkout-subtitle {
+                font-size: 16px;
+            }
+            
+            .checkout-card {
+                padding: 32px;
+            }
+            
+            .clock-in-info {
+                padding: 20px;
+            }
+            
+            .clock-in-time {
+                font-size: 20px;
+            }
+            
+            .form-input, .form-select {
+                padding: 16px 20px;
+                font-size: 18px;
+            }
+            
+            .btn-primary, .btn-secondary {
+                padding: 20px 32px;
+                font-size: 18px;
+            }
+        }
+        
+        /* デスクトップ用（1024px以上） */
+        @media (min-width: 1024px) {
+            .checkout-container {
+                padding: 60px;
+                max-width: 700px;
+            }
+            
+            .checkout-title {
+                font-size: 42px;
+            }
+            
+            .checkout-subtitle {
+                font-size: 18px;
+            }
+            
+            .checkout-card {
+                padding: 40px;
+            }
+            
+            .clock-in-info {
+                padding: 24px;
+            }
+            
+            .clock-in-time {
+                font-size: 22px;
+            }
+            
+            .form-input, .form-select {
+                padding: 20px 24px;
+                font-size: 20px;
+            }
+            
+            .btn-primary, .btn-secondary {
+                padding: 24px 40px;
+                font-size: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>退勤報告</h1>
-    </header>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1 class="checkout-title">退勤報告</h1>
+            <p class="checkout-subtitle">本日の業務内容を入力してください</p>
+        </div>
 
-    <main>
         <!-- エラーメッセージ表示 -->
         {% if error_message %}
             <div class="error-message">
                 <h3>{{ error_message }}</h3>
             </div>
             <div class="button-group">
-                <a href="{% url 'kintai_top' %}" class="action-button">マイページに戻る</a>
+                <a href="{% url 'kintai_top' %}" class="btn-secondary">マイページに戻る</a>
             </div>
         {% elif last_clock_in %}
-            <div class="performance-summary">
-                <h3>最終出勤時刻</h3>
-                <p class="clock-time">{{ last_clock_in.created_at|date:"Y年m月d日 H:i" }}</p>
-            </div>
-    
-            <div class="button-group">
+            <div class="checkout-card">
+                <div class="clock-in-info">
+                    <p class="clock-in-label">最終出勤時刻</p>
+                    <p class="clock-in-time">{{ last_clock_in.created_at|date:"Y年m月d日 H:i" }}</p>
+                </div>
+                
                 <form method="post">
                     {% csrf_token %}
                     
-                    <div class="form-fields">
-                        {{ form.as_p }}
+                    <div class="form-group">
+                        <label class="form-label">キャリア</label>
+                        {{ form.carrier }}
                     </div>
                     
-                    <button type="submit" class="action-button">退勤を確定する</button>
+                    <div class="form-group">
+                        <label class="form-label">クローズ件数</label>
+                        {{ form.close_number }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">スウィング件数</label>
+                        {{ form.swing_number }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">新規件数</label>
+                        {{ form.new_close_number }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">UPG件数</label>
+                        {{ form.upg_close_number }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">MNP件数</label>
+                        {{ form.mnp_close_number }}
+                    </div>
+                    
+                    <div class="form-group jcom-field">
+                        <label class="form-label">TV件数</label>
+                        {{ form.tv_close_number }}
+                    </div>
+                    
+                    <div class="form-group jcom-field">
+                        <label class="form-label">NET件数</label>
+                        {{ form.net_close_number }}
+                    </div>
+                    
+                    <div class="form-group jcom-field">
+                        <label class="form-label">TEL件数</label>
+                        {{ form.tel_close_number }}
+                    </div>
+                    
+                    <div class="form-group jcom-field">
+                        <label class="form-label">TOS件数</label>
+                        {{ form.tos_close_number }}
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">退勤を確定する</button>
+                        <a href="{% url 'kintai_top' %}" class="btn-secondary">キャンセル</a>
+                    </div>
                 </form>
-                <a href="{% url 'kintai_top' %}" class="action-button secondary">キャンセル</a>
             </div>
         {% else %}
-            <div class="performance-summary">
+            <div class="no-attendance">
                 <h1>出勤されていません</h1>
                 <h2>管理者までお問い合わせください</h2>
             </div>
         {% endif %}
-    </main>
+    </div>
 
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 必要な要素を取得
-        const carrierSelect = document.querySelector('select[name="carrier"]');
-        const jcomFields = document.querySelectorAll('.jcom-field');
-        
-        // 表示を切り替えるための関数
-        function toggleJcomFields() {
-            // 現在選択されている運送会社のテキストを取得
-            const selectedOption = carrierSelect.options[carrierSelect.selectedIndex];
-            const isJcom = selectedOption && selectedOption.text.includes('J:COM');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 必要な要素を取得
+            const carrierSelect = document.querySelector('select[name="carrier"]');
+            const jcomFields = document.querySelectorAll('.jcom-field');
             
-            // jcom-fieldクラスを持つ全ての要素に対して処理を実行
-            jcomFields.forEach(function(field) {
-                // Djangoが生成する親の<p>タグを取得して、それを丸ごと表示/非表示にする
-                const fieldContainer = field.closest('p');
-                if (fieldContainer) {
-                    fieldContainer.style.display = isJcom ? 'block' : 'none';
-                }
-            });
-        }
-        
-        // ページが読み込まれた時に、まず一度実行して初期状態を設定
-        toggleJcomFields();
-        
-        // 運送会社の選択が変更された時に、毎回関数を実行
-        carrierSelect.addEventListener('change', toggleJcomFields);
-    });
-</script>
+            // 表示を切り替えるための関数
+            function toggleJcomFields() {
+                // 現在選択されている運送会社のテキストを取得
+                const selectedOption = carrierSelect.options[carrierSelect.selectedIndex];
+                const isJcom = selectedOption && selectedOption.text.includes('J:COM');
+                
+                // jcom-fieldクラスを持つ全ての要素に対して処理を実行
+                jcomFields.forEach(function(field) {
+                    field.style.display = isJcom ? 'block' : 'none';
+                });
+            }
+            
+            // ページが読み込まれた時に、まず一度実行して初期状態を設定
+            toggleJcomFields();
+            
+            // 運送会社の選択が変更された時に、毎回関数を実行
+            carrierSelect.addEventListener('change', toggleJcomFields);
+        });
+    </script>
 </body>
 </html>

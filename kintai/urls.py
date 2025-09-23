@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin/users/<int:user_id>/performance/', views.admin_user_performance_view, name='admin_user_performance'),
     path('admin/reports/', views.admin_reports_view, name='admin_reports'),
     path('admin/carriers/', views.admin_carriers_view, name='admin_carriers'),
+    path('admin/carriers/<int:carrier_id>/', views.admin_carrier_detail_view, name='admin_carrier_detail'),
     path('admin/analytics/', views.admin_analytics_view, name='admin_analytics'),
     path('admin/attendance/', views.admin_attendance_management_view, name='admin_attendance_management'),
 ]
