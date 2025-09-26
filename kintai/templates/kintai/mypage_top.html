@@ -49,12 +49,12 @@
             {% if attendance_status == 'CLOCKED_IN' %}
                 <h3 class="status-text clocked-in">出勤中</h3>
                 {% if last_clock_in %}
-                    <p class="status-time">{{ last_clock_in.created_at|date:"Y年m月d日 H:i" }}</p>
+                    <p class="status-time">{{ last_clock_in.created_at|date:"Y年m月d日 H:i:s" }}</p>
                 {% endif %}
             {% elif attendance_status == 'CLOCKED_OUT' %}
                 <h3 class="status-text clocked-out">退勤中</h3>
                 {% if last_clock_in and last_clock_in.clock_out_time %}
-                    <p class="status-time">{{ last_clock_in.clock_out_time|date:"Y年m月d日 H:i" }}</p>
+                    <p class="status-time">{{ last_clock_in.clock_out_time|date:"Y年m月d日 H:i:s" }}</p>
                 {% endif %}
             {% else %}
                 <h3 class="status-text no-record">記録なし</h3>

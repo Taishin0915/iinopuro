@@ -854,11 +854,17 @@ def admin_attendance_management_view(request):
     # 出勤中のユーザーのみをフィルタ
     working_users = [data for data in attendance_data if data['status'] == 'CLOCKED_IN']
     
+    # 出勤率を計算（出勤人数 ÷ 全ユーザー数 × 100）
+    working_count = len(working_users)
+    total_count = len(all_users)
+    attendance_rate = round((working_count / total_count * 100), 1) if total_count > 0 else 0.0
+    
     context = {
         'all_users': attendance_data,
         'working_users': working_users,
-        'working_count': len(working_users),
-        'total_count': len(all_users),
+        'working_count': working_count,
+        'total_count': total_count,
+        'attendance_rate': attendance_rate,
         'selected_date': selected_date,
         'today': date.today(),
     }

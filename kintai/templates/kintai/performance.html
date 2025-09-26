@@ -157,8 +157,8 @@
                 <div class="period-header">
                     <h4>表示期間を選択</h4>
                     <p class="period-info">
-                        現在の表示期間: {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)
-                    </p>
+                        <div>現在の表示期間:</div>
+                        <div> {{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }} ({{ months_back }}ヶ月間)</div>
                 </div>
                 <div class="period-buttons">
                     <button class="period-btn" data-months="1">1ヶ月</button>
@@ -171,12 +171,6 @@
             <!-- グラフ: 月別実績（出勤日数・MNP件数・生産性） -->
             <div class="chart-container">
                 <h3 class="chart-title">月別実績（出勤日数・MNP件数・生産性）</h3>
-                <div style="margin-bottom: 16px; padding: 12px; background: #f0f9ff; border-left: 4px solid #10b981; border-radius: 4px;">
-                    <p style="margin: 0; font-size: 0.9em; color: #374151; line-height: 1.4;">
-                        <strong>生産性について:</strong> 生産性 = 総クローズ件数 ÷ 出勤日数<br>
-                        <span style="color: #6b7280; font-size: 0.85em;">1日あたりの平均クローズ件数を表します。数値が高いほど効率的に業務をこなしていることを示します。</span>
-                    </p>
-                </div>
                 <div class="chart-legend">
                     <div class="legend-item">
                         <div class="legend-color" style="background-color: #2563eb;"></div>

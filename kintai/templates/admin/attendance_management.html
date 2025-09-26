@@ -49,13 +49,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-label">出勤率</div>
-                <div class="stat-value">
-                    {% if total_count > 0 %}
-                        {{ working_count|floatformat:0 }}%
-                    {% else %}
-                        0%
-                    {% endif %}
-                </div>
+                <div class="stat-value">{{ attendance_rate }}%</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">表示日付</div>
@@ -71,7 +65,7 @@
                     <table class="attendance-table">
                         <thead>
                             <tr>
-                                <th>ユーザー名</th>
+                                <th>ユーザー</th>
                                 <th>出勤状況</th>
                                 <th>出勤時刻</th>
                             </tr>
@@ -83,7 +77,7 @@
                                 <td class="status">
                                     <span class="status-working">出勤中</span>
                                 </td>
-                                <td class="clock-time">{{ data.clock_in_time|date:"H:i" }}</td>
+                                <td class="clock-time">{{ data.clock_in_time|date:"H:i:s" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -103,7 +97,7 @@
                 <table class="attendance-table">
                     <thead>
                         <tr>
-                            <th>ユーザー名</th>
+                            <th>ユーザー</th>
                             <th>出勤状況</th>
                             <th>出勤時刻</th>
                         </tr>
@@ -121,7 +115,7 @@
                             </td>
                             <td class="clock-time">
                                 {% if data.clock_in_time %}
-                                    {{ data.clock_in_time|date:"H:i" }}
+                                    {{ data.clock_in_time|date:"H:i:s" }}
                                 {% else %}
                                     -
                                 {% endif %}

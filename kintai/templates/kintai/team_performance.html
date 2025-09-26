@@ -167,7 +167,7 @@
             padding: 12px 16px;
             margin: 16px 0;
             text-align: center;
-            color: #0369a1;
+            color: #000000;
             font-weight: 600;
             font-size: 14px;
         }
@@ -193,7 +193,7 @@
             border: 1px solid #e5e7eb;
             border-radius: 3px;
             font-size: 10px;
-            background: white;
+            background: rgb(193, 193, 193);
             transition: border-color 0.3s ease;
             width: 100px;
             height: 16px;
@@ -280,9 +280,7 @@
                 選択日: {{ selected_date|date:"Y年m月d日" }}
             </p>
             <!-- デバッグ情報 -->
-            <p style="font-size: 12px; color: #666; margin: 8px 0;">
-                デバッグ: selected_date_str = "{{ selected_date_str }}", selected_date = "{{ selected_date }}"
-            </p>
+            
             <div class="stats-grid">
                 <div class="stat-item">
                     <span class="stat-label">総レポート数</span>

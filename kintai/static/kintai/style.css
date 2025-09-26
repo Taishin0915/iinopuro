@@ -955,7 +955,7 @@ body.login-page {
     padding: 8px;
     border: 1px solid #000000;
     border-radius: 5px;
-    background: #ffffff;
+    background: #616161;
     color: #000000;
     font-size: 14px;
     min-width: 150px;
@@ -1485,7 +1485,7 @@ body.login-page {
     position: relative;
     background: #ffffff;
     border-radius: 8px;
-    padding: 24px;
+    padding: 4px;
     border: 1px solid #e5e7eb;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -1590,8 +1590,8 @@ body.login-page {
 }
 
 .period-info {
-    font-size: 0.9em;
-    color: #6b7280;
+    font-size: 3em;
+    color: #6fc8e9;
     margin: 0;
     line-height: 1.3;
 }
@@ -1619,9 +1619,9 @@ html body .period-selector .period-buttons button.period-btn[data-months] {
 body .period-selector .period-buttons .period-btn {
     padding: 8px 16px !important;
     font-size: 0.9em !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    color: #374151 !important;
+    background: 0 0 15px #78dbff !important;
+    border: 1px solid #9bc3ff !important;
+    color: #000000 !important;
     border-radius: 6px !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
@@ -1728,8 +1728,8 @@ body .period-selector .period-buttons .period-btn {
         align-items: stretch !important;
         gap: 15px !important;
         padding: 16px 20px !important;
-        background: #f9fafb !important;
-        border: 1px solid #e5e7eb !important;
+        background: rgb(98 213 255 / 10%) !important;
+        border: 1px solid rgb(98 213 255 / 10%) !important;
     }
     
     .period-header {
@@ -1744,7 +1744,7 @@ body .period-selector .period-buttons .period-btn {
     
     .period-info {
         font-size: 0.85em !important;
-        color: #6b7280 !important;
+        color: #78dbff !important;
     }
     
     .period-buttons {
@@ -2061,7 +2061,7 @@ body .period-selector .period-buttons .period-btn {
     .attendance-table th,
     .attendance-table td {
         padding: 20px 15px !important;
-        font-size: 1.6em !important;
+        font-size: 1.25em !important;
     }
     
     /* 日付選択フォーム */
@@ -2076,16 +2076,16 @@ body .period-selector .period-buttons .period-btn {
     }
     
     .date-input {
-        padding: 25px 30px !important;
-        font-size: 1.8em !important;
-        min-height: 80px !important;
-        width: 100%;
+        padding: 5px 30px !important;
+        font-size: 1.6em !important;
+        min-height: 40px !important;
+        width: 58%;
     }
     
     .date-form-button {
-        padding: 25px 35px !important;
+        padding: 10px 80px !important;
         font-size: 1.8em !important;
-        min-height: 80px !important;
+        min-height: 40px !important;
     }
     
     /* フォーム要素 - さらに縮小 */
@@ -2867,7 +2867,7 @@ body .period-selector .period-buttons .period-btn {
 
 .period-info {
     margin-top: 10px;
-    color: #888;
+    color: #78dbff;
     font-size: 14px;
     text-align: center;
 }
@@ -3037,7 +3037,7 @@ body .period-selector .period-buttons .period-btn {
     color: #ffffff;
     font-size: 0.95em;
     transition: all 0.3s ease;
-    min-width: 150px;
+    min-width: 212px;
 }
 
 .date-input:focus {

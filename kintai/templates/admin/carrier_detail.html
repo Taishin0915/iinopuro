@@ -223,6 +223,69 @@
             font-size: 1em;
             opacity: 0.7;
         }
+
+        /* 期間選択スタイル */
+        .period-selector {
+            background: rgba(120, 219, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            backdrop-filter: blur(15px);
+        }
+        
+        .period-info {
+            text-align: center;
+            margin-bottom: 16px;
+            color: #78dbff;
+            font-size: 14px;
+        }
+        
+        .period-info p {
+            color: #78dbff;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .period-duration {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .period-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+        
+        .period-btn {
+            background: rgba(120, 219, 255, 0.2);
+            color: #78dbff;
+            border: 1px solid rgba(120, 219, 255, 0.4);
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .period-btn:hover {
+            background: rgba(120, 219, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .period-btn.active {
+            background: rgba(120, 219, 255, 0.4);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
         
         @media (min-width: 768px) {
             .summary-grid {
@@ -269,6 +332,21 @@
         </div>
 
         <div class="carrier-card">
+            <!-- 期間選択 -->
+            <div class="period-selector">
+                <div class="period-info">
+                    <div>表示期間:</div>
+                    <p>{{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }}</p>
+                    <p class="period-duration">({{ months_back }}ヶ月間)</p>
+                </div>
+                <div class="period-buttons">
+                    <button class="period-btn" data-months="1">1ヶ月</button>
+                    <button class="period-btn" data-months="3">3ヶ月</button>
+                    <button class="period-btn" data-months="6">半年</button>
+                    <button class="period-btn" data-months="12">一年</button>
+                </div>
+            </div>
+            
             <div class="carrier-summary">
                 <div class="summary-grid">
                     <div class="summary-item">
@@ -323,6 +401,26 @@
                 Chart.register(ChartDataLabels);
                 
                 document.addEventListener('DOMContentLoaded', function() {
+                    // 期間選択ボタンの処理
+                    const periodButtons = document.querySelectorAll('.period-btn');
+                    const currentMonths = {{ months_back|default:3 }};
+                    
+                    // 現在の期間ボタンをアクティブにする
+                    periodButtons.forEach(btn => {
+                        if (parseInt(btn.dataset.months) === currentMonths) {
+                            btn.classList.add('active');
+                        }
+                    });
+                    
+                    // 期間ボタンクリック時の処理
+                    periodButtons.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const months = this.dataset.months;
+                            const url = new URL(window.location);
+                            url.searchParams.set('months', months);
+                            window.location.href = url.toString();
+                        });
+                    });
                     // 月別データの準備
                     const monthlyData = {
                         labels: [{% for month, month_stats in stats.monthly_stats.items %}'{{ month }}月',{% endfor %}],
@@ -417,7 +515,12 @@
                                         }
                                     },
                                     title: {
-                                        display: false
+                                        display: true,
+                                        text: '件数',
+                                        color: '#6b7280',
+                                        font: {
+                                            size: 12
+                                        }
                                     }
                                 },
                                 y1: {
@@ -433,7 +536,12 @@
                                         }
                                     },
                                     title: {
-                                        display: false
+                                        display: true,
+                                        text: '生産性（件/日）',
+                                        color: '#6b7280',
+                                        font: {
+                                            size: 12
+                                        }
                                     }
                                 }
                             },
