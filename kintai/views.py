@@ -10,7 +10,7 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from django.contrib.admin.views.decorators import staff_member_required
 # 🔽 Report, ReportImage, Carrier モデルをインポート
-from core.models import Report, ReportImage, Carrier
+from core.models import Report, ReportImage, Carrier, DepartureRecord
 # 🔽 作成したフォームをインポート
 from .forms import ReportImageForm
 from .forms import ClockOutReportForm
@@ -80,6 +80,12 @@ def kintai_view(request):
     ).order_by('-created_at').first()
     print(f"DEBUG: last_clock_in: {last_clock_in}")
 
+    # 今日の出発記録をチェック
+    departure_record = DepartureRecord.objects.filter(
+        user=request.user,
+        departure_date=today
+    ).first()
+
     # 既存のcontextに、新しいデータを追加
     context = {
         'title': '勤怠管理システム',
@@ -88,6 +94,7 @@ def kintai_view(request):
         'report': latest_report,   # ◀ 最新のレポート情報を追加
         'attendance_status': attendance_status,
         'last_clock_in': last_clock_in,
+        'departure_record': departure_record,
     }
     
     return render(request, 'kintai/mypage_top.html', context)
@@ -181,6 +188,54 @@ def checkout_view(request):
     }
     return render(request, 'kintai/checkout_page.html', context)
 
+
+
+@login_required
+def departure_view(request):
+    """出発ボタン処理"""
+    today = timezone.localtime(timezone.now()).date()
+    
+    # 今日の出発記録が既に存在するかチェック
+    existing_departure = DepartureRecord.objects.filter(
+        user=request.user,
+        departure_date=today
+    ).first()
+    
+    if existing_departure:
+        messages.warning(request, '本日は既に出発ボタンを押しています。')
+        return redirect('kintai_top')
+    
+    # 出発記録を作成
+    departure_record = DepartureRecord.objects.create(
+        user=request.user,
+        departure_date=today
+    )
+    
+    # 出発完了画面にリダイレクト
+    return redirect('departure_complete')
+
+
+@login_required
+def departure_complete_view(request):
+    """出発完了画面"""
+    today = timezone.localtime(timezone.now()).date()
+    
+    # 今日の出発記録を取得
+    departure_record = DepartureRecord.objects.filter(
+        user=request.user,
+        departure_date=today
+    ).first()
+    
+    if not departure_record:
+        messages.warning(request, '出発記録が見つかりません。')
+        return redirect('kintai_top')
+    
+    context = {
+        'user': request.user,
+        'departure_time': departure_record.departure_time,
+    }
+    
+    return render(request, 'kintai/departure_complete.html', context)
 
 
 @login_required
@@ -851,13 +906,23 @@ def admin_attendance_management_view(request):
                 'swing_number': 0,
             })
     
-    # 出勤中のユーザーのみをフィルタ
-    working_users = [data for data in attendance_data if data['status'] == 'CLOCKED_IN']
+    # 出勤中または出発記録があるユーザーをフィルタ
+    working_users = [data for data in attendance_data if data['status'] == 'CLOCKED_IN' or data.get('departure_record') is not None]
     
     # 出勤率を計算（出勤人数 ÷ 全ユーザー数 × 100）
     working_count = len(working_users)
     total_count = len(all_users)
     attendance_rate = round((working_count / total_count * 100), 1) if total_count > 0 else 0.0
+    
+    # 出発記録を取得
+    departure_records = DepartureRecord.objects.filter(
+        departure_date=selected_date
+    ).select_related('user')
+    
+    # 出発記録をユーザーデータに追加
+    departure_dict = {record.user.id: record for record in departure_records}
+    for data in attendance_data:
+        data['departure_record'] = departure_dict.get(data['user'].id)
     
     context = {
         'all_users': attendance_data,
@@ -867,6 +932,7 @@ def admin_attendance_management_view(request):
         'attendance_rate': attendance_rate,
         'selected_date': selected_date,
         'today': date.today(),
+        'departure_records': departure_records,
     }
     
     return render(request, 'admin/attendance_management.html', context)

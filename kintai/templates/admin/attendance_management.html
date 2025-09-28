@@ -6,6 +6,61 @@
     <title>稼働管理 - Windmill Job App</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <style>
+        .status-departed {
+            background: #10b981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-not-departed {
+            background: #f59e0b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .departed-user {
+            color: #10b981 !important;
+            font-weight: 600;
+        }
+        
+        .not-departed-user {
+            color: #ef4444 !important;
+            font-weight: 600;
+        }
+        
+        .color-legend {
+            display: flex;
+            gap: 50px;
+            margin-bottom: -10px;
+            margin-top: 15px;
+            padding: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            justify-content: center;
+        }
+        
+        .color-legend p {
+            margin: 0;
+            font-size: 12px;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .legend-item {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body class="admin-page">
     <div class="admin-container">
@@ -59,7 +114,11 @@
 
         <!-- 出勤中ユーザー一覧 -->
         <div class="admin-content">
-            <h2>出勤中ユーザー</h2>
+            <h2>出発/出勤中ユーザー</h2>
+            <div class="color-legend">
+                <p><span class="legend-item departed-user">■</span> 出発済み</p>
+                <p><span class="legend-item not-departed-user">■</span> 未出発</p>
+            </div>
             {% if working_users %}
                 <div class="attendance-table-container">
                     <table class="attendance-table">
@@ -73,11 +132,23 @@
                         <tbody>
                             {% for data in working_users %}
                             <tr>
-                                <td class="user-name">{{ data.user.username }}</td>
-                                <td class="status">
-                                    <span class="status-working">出勤中</span>
+                                <td class="user-name {% if data.departure_record %}departed-user{% else %}not-departed-user{% endif %}">
+                                    {{ data.user.username }}
                                 </td>
-                                <td class="clock-time">{{ data.clock_in_time|date:"H:i:s" }}</td>
+                                <td class="status">
+                                    {% if data.status == 'CLOCKED_IN' %}
+                                        <span class="status-working">出勤中</span>
+                                    {% else %}
+                                        <span class="status-not-working">未出勤</span>
+                                    {% endif %}
+                                </td>
+                                <td class="clock-time">
+                                    {% if data.clock_in_time %}
+                                        {{ data.clock_in_time|date:"H:i:s" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -90,9 +161,14 @@
             {% endif %}
         </div>
 
+
         <!-- 全ユーザー一覧 -->
         <div class="admin-content">
             <h2>全ユーザー状況</h2>
+            <div class="color-legend">
+                <p><span class="legend-item departed-user">■</span> 出発済み</p>
+                <p><span class="legend-item not-departed-user">■</span> 未出発</p>
+            </div>
             <div class="attendance-table-container">
                 <table class="attendance-table">
                     <thead>
@@ -105,7 +181,9 @@
                     <tbody>
                         {% for data in all_users %}
                         <tr class="{% if data.status == 'CLOCKED_IN' %}working-row{% else %}not-working-row{% endif %}">
-                            <td class="user-name">{{ data.user.username }}</td>
+                            <td class="user-name {% if data.departure_record %}departed-user{% else %}not-departed-user{% endif %}">
+                                {{ data.user.username }}
+                            </td>
                             <td class="status">
                                 {% if data.status == 'CLOCKED_IN' %}
                                     <span class="status-working">出勤中</span>

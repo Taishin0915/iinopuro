@@ -679,6 +679,7 @@ body.admin-page::before {
     padding: 30px;
     border: 1px solid var(--admin-border);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    margin-top: 10px;
 }
 
 .user-info {
@@ -1468,8 +1469,8 @@ body.login-page {
     font-weight: 500;
     padding: 4px 8px;
     border-radius: 4px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    
+    
 }
 
 .legend-color {

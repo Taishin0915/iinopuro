@@ -10,6 +10,8 @@ urlpatterns = [
     path('clockout/complete/', views.checkout_complete_view, name='kintai_checkout_complete'),
     path('performance/', views.performance_view, name='kintai_performance'),
     path('team-performance/', views.team_performance_view, name='team_performance'),
+    path('departure/', views.departure_view, name='departure'),
+    path('departure/complete/', views.departure_complete_view, name='departure_complete'),
     
     # 管理者画面のURL
     path('admin/', views.admin_dashboard_view, name='admin_dashboard'),

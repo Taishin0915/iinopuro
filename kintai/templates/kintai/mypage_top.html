@@ -64,6 +64,11 @@
         
         <div class="button-group">
             <!-- 出勤ボタン: 出勤中でない場合のみ表示 -->
+            {% if departure_record %}
+            <span class="action-button disabled">出発済み</span>
+            {% else %}
+            <a href="{% url 'departure' %}" class="action-button departure-button">出発</a>
+            {% endif %}
             {% if attendance_status != 'CLOCKED_IN' %}
                 <a href="{% url 'kintai_checkin' %}" class="action-button">出勤</a>
             {% else %}

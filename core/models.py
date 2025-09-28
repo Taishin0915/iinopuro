@@ -55,6 +55,17 @@ class ReportImage(models.Model):
         return f"Image for Report ID: {self.report.id}"
 
 
+# 出発記録モデル
+class DepartureRecord(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    departure_date = models.DateField()
+    departure_time = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'departure_date']  # 1日に1回のみ
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.departure_date}"
 
 
 # ... (既存のReportImageFormはそのまま) ...
