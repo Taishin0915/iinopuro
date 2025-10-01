@@ -3,6 +3,9 @@ from . import views
 
 
 urlpatterns = [
+    path('login/', views.login_view, name='login'),
+    path('register/', views.register_view, name='register'),
+    path('logout/', views.logout_view, name='logout'),
     path('', views.kintai_view, name='kintai_top'), # ◀ 最後のsを削除
     path('checkin/', views.checkin_view, name='kintai_checkin'),
     path('complete/', views.checkin_complete_view, name='kintai_complete'),
@@ -12,6 +15,7 @@ urlpatterns = [
     path('team-performance/', views.team_performance_view, name='team_performance'),
     path('departure/', views.departure_view, name='departure'),
     path('departure/complete/', views.departure_complete_view, name='departure_complete'),
+    path('profile/', views.profile_view, name='profile'),
     
     # 管理者画面のURL
     path('admin/', views.admin_dashboard_view, name='admin_dashboard'),
@@ -22,4 +26,6 @@ urlpatterns = [
     path('admin/carriers/<int:carrier_id>/', views.admin_carrier_detail_view, name='admin_carrier_detail'),
     path('admin/analytics/', views.admin_analytics_view, name='admin_analytics'),
     path('admin/attendance/', views.admin_attendance_management_view, name='admin_attendance_management'),
+    path('admin/users/create/', views.admin_create_user_view, name='admin_create_user'),
+    path('admin/users/delete/', views.admin_delete_user_view, name='admin_delete_user'),
 ]

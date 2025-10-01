@@ -42,14 +42,14 @@ class ClockOutForm(forms.ModelForm):
 from django import forms
 from core.models import Report, Carrier
 
-# ドロップダウンで表示する数字の選択肢を定義（例：0から20まで）
-NUMBER_CHOICES = [(i, str(i)) for i in range(21)]
+# ドロップダウンで表示する数字の選択肢を定義（例：0から50まで）
+NUMBER_CHOICES = [(i, str(i)) for i in range(51)]
 
 # ... (他のフォームクラスはそのまま) ...
 
 # kintai/forms.py
 
-NUMBER_CHOICES = [(i, str(i)) for i in range(21)]
+NUMBER_CHOICES = [(i, str(i)) for i in range(51)]
 
 
 class ClockOutReportForm(forms.ModelForm):
@@ -72,8 +72,8 @@ class ClockOutReportForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Carrierの選択肢を運送会社名で表示し、必須項目にする
-        self.fields['carrier'].queryset = Carrier.objects.all()
+        # Carrierの選択肢を運送会社名で表示し、必須項目にする（「テスト運送」を除外）
+        self.fields['carrier'].queryset = Carrier.objects.exclude(carrier_name='テスト運送')
         self.fields['carrier'].label = "キャリア"
         self.fields['carrier'].empty_label = "選択してください"
         self.fields['carrier'].required = True
@@ -112,3 +112,77 @@ class ClockOutReportForm(forms.ModelForm):
         ]
         for field_name in jcom_fields:
             self.fields[field_name].widget.attrs.update({'class': 'jcom-field'})
+
+
+class UserRegistrationForm(forms.Form):
+    """新規アカウント作成フォーム"""
+    username = forms.CharField(
+        label='ユーザー名',
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'ユーザー名を入力',
+            'required': True
+        })
+    )
+    password1 = forms.CharField(
+        label='パスワード',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'パスワードを入力',
+            'required': True
+        })
+    )
+    password2 = forms.CharField(
+        label='パスワード（確認）',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'パスワードを再入力',
+            'required': True
+        })
+    )
+    first_name = forms.CharField(
+        label='姓',
+        max_length=30,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': '姓を入力',
+            'required': True
+        })
+    )
+    last_name = forms.CharField(
+        label='名',
+        max_length=30,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': '名を入力',
+            'required': True
+        })
+    )
+    email = forms.EmailField(
+        label='メールアドレス',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'メールアドレスを入力',
+            'required': True
+        })
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            if User.objects.filter(username=username).exists():
+                raise forms.ValidationError('このユーザー名は既に使用されています。')
+        return username
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError('パスワードが一致しません。')
+        
+        return cleaned_data

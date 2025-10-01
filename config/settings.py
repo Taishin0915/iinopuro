@@ -140,8 +140,9 @@ MEDIA_URL = '/media/'
 
 # ログイン後のリダイレクト先
 LOGIN_REDIRECT_URL = '/kintai/'
+LOGIN_URL = '/kintai/login/'
 # ログアウト後のリダイレクト先
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/kintai/login/'
 if DEBUG:
     INTERNAL_IPS = [
         "127.0.0.1",

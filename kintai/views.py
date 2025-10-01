@@ -4,17 +4,122 @@ from django.http import HttpRequest
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib import messages
 from django.db.models import Count
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 # 🔽 Report, ReportImage, Carrier モデルをインポート
 from core.models import Report, ReportImage, Carrier, DepartureRecord
 # 🔽 作成したフォームをインポート
-from .forms import ReportImageForm
-from .forms import ClockOutReportForm
+from .forms import ReportImageForm, ClockOutReportForm, UserRegistrationForm
 from .models import Timestamp
+
+
+def login_view(request):
+    """ログイン・登録画面（統一）"""
+    if request.user.is_authenticated:
+        return redirect('kintai_top')
+    
+    login_form = AuthenticationForm()
+    registration_form = UserRegistrationForm()
+    
+    # ログイン処理
+    if request.method == 'POST':
+        print(f"DEBUG: POST received - {request.POST}")  # デバッグ
+        print(f"DEBUG: User-Agent: {request.META.get('HTTP_USER_AGENT', 'Unknown')}")  # デバッグ
+        print(f"DEBUG: Remote IP: {request.META.get('REMOTE_ADDR', 'Unknown')}")  # デバッグ
+        
+        login_form = AuthenticationForm(request, data=request.POST)
+        print(f"DEBUG: Form valid - {login_form.is_valid()}")  # デバッグ
+        
+        if login_form.is_valid():
+            username = login_form.cleaned_data.get('username')
+            password = login_form.cleaned_data.get('password')
+            print(f"DEBUG: Authenticating user: {username}")  # デバッグ
+            print(f"DEBUG: Password length: {len(password) if password else 0}")  # デバッグ
+            
+            # ユーザーが存在するかチェック
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user_exists = User.objects.filter(username=username).exists()
+            print(f"DEBUG: User exists in database: {user_exists}")  # デバッグ
+            
+            user = authenticate(request, username=username, password=password)
+            print(f"DEBUG: User authenticated: {user is not None}")  # デバッグ
+            
+            if user is not None:
+                print(f"DEBUG: User details: {user.username}, Active: {user.is_active}")  # デバッグ
+                if user.is_active:
+                    login(request, user)
+                    print("DEBUG: Login successful, redirecting")  # デバッグ
+                    messages.success(request, f'ようこそ、{user.username}さん！')
+                    return redirect('kintai_top')
+                else:
+                    print("DEBUG: User account is inactive")  # デバッグ
+                    messages.error(request, 'このアカウントは無効化されています。管理者にお問い合わせください。')
+            else:
+                print("DEBUG: Authentication failed")  # デバッグ
+                if user_exists:
+                    messages.error(request, 'パスワードが正しくありません。')
+                else:
+                    messages.error(request, 'ユーザー名が存在しません。')
+        else:
+            print("DEBUG: Form validation failed")  # デバッグ
+            print(f"DEBUG: Form errors - {login_form.errors}")  # デバッグ
+            
+            # より詳細なエラーメッセージを表示
+            if 'username' in login_form.errors:
+                messages.error(request, 'ユーザー名を入力してください。')
+            elif 'password' in login_form.errors:
+                messages.error(request, 'パスワードを入力してください。')
+            else:
+                for field, errors in login_form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'{field}: {error}')
+    
+    context = {
+        'login_form': login_form,
+    }
+    return render(request, 'registration/login.html', context)
+
+
+def register_view(request):
+    """新規登録画面"""
+    if request.user.is_authenticated:
+        return redirect('kintai_top')
+    
+    registration_form = UserRegistrationForm()
+    
+    # 新規登録処理
+    if request.method == 'POST':
+        registration_form = UserRegistrationForm(request.POST)
+        if registration_form.is_valid():
+            User = get_user_model()
+            user = User.objects.create_user(
+                username=registration_form.cleaned_data['username'],
+                password=registration_form.cleaned_data['password1'],
+                first_name=registration_form.cleaned_data['first_name'],
+                last_name=registration_form.cleaned_data['last_name'],
+                email=registration_form.cleaned_data['email']
+            )
+            messages.success(request, 'アカウントが正常に作成されました！ログインしてください。')
+            return redirect('login')
+    
+    context = {
+        'registration_form': registration_form,
+    }
+    return render(request, 'registration/register.html', context)
+
+
+def logout_view(request):
+    """ログアウト"""
+    from django.contrib.auth import logout
+    logout(request)
+    return redirect('login')
+
 
 def get_user_attendance_status(user):
     """
@@ -744,13 +849,26 @@ def admin_user_performance_view(request, user_id):
     
     # 期間選択パラメータを取得（デフォルトは6ヶ月）
     months_back = int(request.GET.get('months', 6))
-    pie_months_back = int(request.GET.get('pie_months', 6))
-    end_date = date.today()
-    start_date = end_date - relativedelta(months=months_back)
+    selected_month = request.GET.get('selected_month', '')  # 特定月選択用（YYYY-MM形式）
     
-    # 円グラフ用の期間
-    pie_end_date = date.today()
-    pie_start_date = pie_end_date - relativedelta(months=pie_months_back)
+    # 1ヶ月表示で特定月が選択されている場合
+    if months_back == 1 and selected_month:
+        try:
+            # 選択された月の開始日と終了日を設定
+            year, month = map(int, selected_month.split('-'))
+            start_date = date(year, month, 1)
+            if month == 12:
+                end_date = date(year + 1, 1, 1) - timedelta(days=1)
+            else:
+                end_date = date(year, month + 1, 1) - timedelta(days=1)
+        except (ValueError, IndexError):
+            # 無効な形式の場合はデフォルトに戻す
+            end_date = date.today()
+            start_date = end_date - relativedelta(months=months_back)
+    else:
+        # 通常の期間選択
+        end_date = date.today()
+        start_date = end_date - relativedelta(months=months_back)
     
     reports = Report.objects.filter(
         user=target_user,
@@ -758,17 +876,58 @@ def admin_user_performance_view(request, user_id):
         work_date__lte=end_date
     ).order_by('-work_date')
     
-    # 円グラフ用のレポート
-    pie_reports = Report.objects.filter(
-        user=target_user,
-        work_date__gte=pie_start_date,
-        work_date__lte=pie_end_date
-    ).order_by('-work_date')
+    # 円グラフ用のレポート（メインと同じ期間を使用）
+    pie_reports = reports
     
     # 統計情報を計算
     total_reports = reports.count()
     total_close_number = sum(report.close_number or 0 for report in reports)
     total_mnp_close_number = sum(report.mnp_close_number or 0 for report in reports)
+    
+    # 生産性を計算（指定された期間の総クローズ件数÷指定された期間の稼働日数）
+    productivity = round(total_close_number / total_reports, 2) if total_reports > 0 else 0
+    
+    # 稼働月リストを取得（1ヶ月表示の時に使用）
+    available_months = []
+    if months_back == 1:
+        # ユーザーが稼働したすべての月を取得
+        all_reports = Report.objects.filter(user=target_user).values('work_date').distinct()
+        months_set = set()
+        for report in all_reports:
+            month_key = report['work_date'].strftime('%Y-%m')
+            months_set.add(month_key)
+        
+        # 月でソート（新しい順）
+        available_months = sorted(list(months_set), reverse=True)
+        
+        # 現在選択されている月を設定（デフォルトは最新月）
+        if not selected_month and available_months:
+            selected_month = available_months[0]
+            # デフォルト月が選択された場合、期間を再設定
+            try:
+                year, month = map(int, selected_month.split('-'))
+                start_date = date(year, month, 1)
+                if month == 12:
+                    end_date = date(year + 1, 1, 1) - timedelta(days=1)
+                else:
+                    end_date = date(year, month + 1, 1) - timedelta(days=1)
+                
+                # 再計算が必要
+                reports = Report.objects.filter(
+                    user=target_user,
+                    work_date__gte=start_date,
+                    work_date__lte=end_date
+                ).order_by('-work_date')
+                
+                # 円グラフ用のレポートも更新
+                pie_reports = reports
+                
+                total_reports = reports.count()
+                total_close_number = sum(report.close_number or 0 for report in reports)
+                total_mnp_close_number = sum(report.mnp_close_number or 0 for report in reports)
+                productivity = round(total_close_number / total_reports, 2) if total_reports > 0 else 0
+            except (ValueError, IndexError):
+                pass
     
     # 月別統計
     monthly_stats = {}
@@ -837,6 +996,7 @@ def admin_user_performance_view(request, user_id):
         'total_reports': total_reports,
         'total_close_number': total_close_number,
         'total_mnp_close_number': total_mnp_close_number,
+        'productivity': productivity,
         'monthly_stats': monthly_stats,
         'monthly_labels': monthly_labels,
         'monthly_close_totals': monthly_close_totals,
@@ -849,9 +1009,10 @@ def admin_user_performance_view(request, user_id):
         'monthly_mnp_close_avg': monthly_mnp_close_avg,
         'pie_chart_data': pie_chart_data,
         'months_back': months_back,
-        'pie_months_back': pie_months_back,
         'start_date': start_date,
         'end_date': end_date,
+        'available_months': available_months,  # 稼働月リスト
+        'selected_month': selected_month,      # 選択中の月
     }
     
     return render(request, 'admin/user_performance.html', context)
@@ -939,6 +1100,107 @@ def admin_attendance_management_view(request):
 
 
 
+
+
+@login_required
+def profile_view(request):
+    """プロフィール画面（パスワード変更）"""
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'パスワードが正常に変更されました。')
+            return redirect('profile')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = PasswordChangeForm(user=request.user)
+    
+    return render(request, 'kintai/profile.html', {
+        'form': form,
+    })
+
+
+@staff_member_required
+def admin_create_user_view(request):
+    """管理者用新規ユーザー作成画面"""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        is_staff = request.POST.get('is_staff') == 'True'
+        
+        # バリデーション
+        if not username:
+            messages.error(request, 'ユーザー名を入力してください。')
+        elif not password1:
+            messages.error(request, 'パスワードを入力してください。')
+        elif password1 != password2:
+            messages.error(request, 'パスワードが一致しません。')
+        elif len(password1) < 8:
+            messages.error(request, 'パスワードは8文字以上で入力してください。')
+        else:
+            # ユーザー名の重複チェック
+            User = get_user_model()
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'このユーザー名は既に使用されています。')
+            else:
+                # ユーザー作成
+                try:
+                    user = User.objects.create_user(
+                        username=username,
+                        password=password1,
+                        is_staff=is_staff
+                    )
+                    messages.success(request, f'ユーザー「{username}」を作成しました。')
+                    return redirect('admin_users')
+                except Exception as e:
+                    messages.error(request, f'ユーザー作成中にエラーが発生しました: {str(e)}')
+    
+    return render(request, 'admin/create_user.html')
+
+
+@staff_member_required
+def admin_delete_user_view(request):
+    """管理者用ユーザー削除画面"""
+    User = get_user_model()
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # バリデーション
+        if not user_id:
+            messages.error(request, '削除するユーザーを選択してください。')
+        elif not confirm_password:
+            messages.error(request, '確認パスワードを入力してください。')
+        elif confirm_password != 'delete12345':
+            messages.error(request, '確認パスワードが正しくありません。')
+        else:
+            try:
+                user = User.objects.get(id=user_id)
+                username = user.username
+                
+                # 自分自身を削除しようとした場合のチェック
+                if user == request.user:
+                    messages.error(request, '自分自身を削除することはできません。')
+                else:
+                    user.delete()
+                    messages.success(request, f'ユーザー「{username}」を削除しました。')
+                    return redirect('admin_users')
+            except User.DoesNotExist:
+                messages.error(request, '選択されたユーザーが見つかりません。')
+            except Exception as e:
+                messages.error(request, f'ユーザー削除中にエラーが発生しました: {str(e)}')
+    
+    # 全ユーザーを取得（自分以外）
+    users = User.objects.exclude(id=request.user.id).order_by('username')
+    
+    return render(request, 'admin/delete_user.html', {
+        'users': users,
+    })
 
 
 def get_calendar_from_sheet():

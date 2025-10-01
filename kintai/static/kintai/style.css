@@ -6,7 +6,7 @@
    CSS Variables
    ======================================== */
 :root {
-    --primary-color: #26a69a;
+    
     --primary-dark-color: #00796b;
     --secondary-color: #80cbc4;
     --light-background-color: #e0f7fa;
@@ -672,6 +672,18 @@ body.admin-page::before {
     box-shadow: 0 5px 15px rgba(120, 219, 255, 0.2);
 }
 
+/* 新規ユーザー作成ボタンのスタイル */
+.create-user-button {
+    background: rgba(76, 175, 80, 0.2) !important;
+    border: 1px solid rgba(76, 175, 80, 0.4) !important;
+    color: #4caf50 !important;
+}
+
+.create-user-button:hover {
+    background: rgba(76, 175, 80, 0.3) !important;
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2) !important;
+}
+
 .admin-content {
     background: var(--admin-bg);
     backdrop-filter: blur(20px);
@@ -761,7 +773,7 @@ body.admin-page::before {
 }
 
 .user-button {
-    width: 100%;
+    width: 102%;
     padding: 6px;
     background: rgba(120, 219, 255, 0.2);
     border: 1px solid rgba(120, 219, 255, 0.4);
@@ -798,9 +810,10 @@ body.admin-page::before {
 }
 
 .bottom-navigation {
-    margin-top: 40px;
+    margin-top: 10px;
+    margin-bottom: 20px;
     text-align: center;
-    padding: 20px;
+    padding: 8px;
 }
 
 /* ========================================
@@ -1322,6 +1335,100 @@ body.login-page {
     box-shadow: 0 2px 10px rgba(255, 0, 0, 0.3);
 }
 
+.sidebar-profile-button {
+    padding: 15px 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    color: #005bed;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-profile-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.sidebar-profile-button:hover::before {
+    left: 100%;
+}
+
+.sidebar-profile-button:hover {
+    border-color: rgba(59, 130, 246, 0.6);
+    color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.sidebar-profile-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+}
+
+.sidebar-mypage-button {
+    padding: 15px 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(126, 34, 206, 0.1));
+    border: 2px solid rgba(147, 51, 234, 0.3);
+    color: #9333ea;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(147, 51, 234, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-mypage-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.sidebar-mypage-button:hover::before {
+    left: 100%;
+}
+
+.sidebar-mypage-button:hover {
+    border-color: rgba(147, 51, 234, 0.6);
+    color: #7c3aed;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(147, 51, 234, 0.4);
+}
+
+.sidebar-mypage-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(147, 51, 234, 0.3);
+}
+
 /* ========================================
    Status Text Styling
    ======================================== */
@@ -1665,7 +1772,7 @@ body .period-selector .period-buttons .period-btn {
 @media (max-width: 768px) {
     /* 縦長レイアウト最適化 */
     html {
-        -webkit-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 125%;
         -ms-text-size-adjust: 100%;
     }
     
@@ -1794,23 +1901,23 @@ body .period-selector .period-buttons .period-btn {
     
     /* ユーザーグリッド */
     .user-grid {
-        grid-template-columns: 1fr !important;
-        gap: 30px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 15px !important;
     }
     
     .user-card {
-        padding: 35px !important;
+        padding: 20px !important;
         text-align: center;
     }
     
     .user-name {
-        font-size: 1.8em !important;
-        margin-bottom: 15px;
+        font-size: 1.2em !important;
+        margin-bottom: 10px;
     }
     
     .user-button {
-        padding: 25px 35px !important;
-        font-size: 1.6em !important;
+        padding: 12px 16px !important;
+        font-size: 0.9em !important;
     }
     
     /* ボタングループ - さらに縮小 */
@@ -2909,7 +3016,7 @@ body .period-selector .period-buttons .period-btn {
 }
 
 .attendance-table th:nth-child(2) {
-    width: 35%;
+    width: 25%;
     text-align: center;
 }
 

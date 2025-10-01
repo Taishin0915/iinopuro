@@ -7,15 +7,31 @@
     <title>退勤報告</title>
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
     <style>
-        /* スマホ用退勤報告ページのスタイル */
+        /* モダンでオシャレな退勤報告ページのスタイル */
         body {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
         
         .checkout-container {
@@ -26,6 +42,8 @@
             max-width: 500px;
             margin: 0 auto;
             width: 100%;
+            position: relative;
+            z-index: 1;
         }
         
         .checkout-header {
@@ -35,47 +53,93 @@
         
         .checkout-title {
             color: white;
-            font-size: 28px;
-            font-weight: 700;
-            margin: 0 0 8px 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 12px 0;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(45deg, #ffffff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)); }
+            to { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6)); }
         }
         
         .checkout-subtitle {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
             margin: 0;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
         .checkout-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .checkout-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
         
         .clock-in-info {
-            background: #f0f9ff;
-            border: 1px solid #e0f2fe;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 24px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 28px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .clock-in-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .clock-in-info:hover::before {
+            left: 100%;
         }
         
         .clock-in-label {
-            color: #0369a1;
+            color: #667eea;
             font-size: 14px;
             font-weight: 600;
             margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .clock-in-time {
-            color: #0c4a6e;
-            font-size: 18px;
+            color: #4c1d95;
+            font-size: 20px;
             font-weight: 700;
             margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .form-group {
@@ -84,31 +148,41 @@
         
         .form-label {
             display: block;
-            color: #374151;
-            font-size: 14px;
+            color: #4c1d95;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .form-input, .form-select {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            background: white;
-            transition: border-color 0.3s ease;
+            padding: 52px 76px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            font-size: 56px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
             box-sizing: border-box;
+            color: #374151;
+            min-height: 140px;
         }
         
         .form-input:focus, .form-select:focus {
             outline: none;
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            border-color: #667eea;
+            box-shadow: 
+                0 0 0 3px rgba(102, 126, 234, 0.1),
+                0 4px 12px rgba(102, 126, 234, 0.15);
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
         }
         
         .form-input[type="number"] {
             -moz-appearance: textfield;
+            appearance: textfield;
         }
         
         .form-input[type="number"]::-webkit-outer-spin-button,
@@ -118,9 +192,37 @@
         }
         
         /* J:COM専用フィールドの中央揃え */
+        .jcom-field {
+            text-align: center;
+        }
+        
+        .jcom-field .form-label {
+            text-align: center;
+            margin: 0 auto 12px auto;
+        }
+        
         .jcom-field .form-input,
         .jcom-field .form-select {
             text-align: center;
+            margin: 0 auto;
+        }
+        
+        /* ドロップダウンの選択肢のスタイル */
+        .form-select option {
+            padding: 48px 52px;
+            font-size: 48px;
+            background: white;
+            color: #374151;
+            min-height: 120px;
+        }
+        
+        /* ドロップダウンの矢印を大きく */
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 60px center;
+            background-repeat: no-repeat;
+            background-size: 52px;
+            padding-right: 120px;
         }
         
         .button-group {
@@ -131,37 +233,60 @@
         }
         
         .btn-primary {
-            background: #10b981;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 16px 24px;
-            border-radius: 12px;
+            padding: 18px 32px;
+            border-radius: 16px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
-            width: 120%;
-            max-width: 280px;
+            box-shadow: 
+                0 8px 24px rgba(102, 126, 234, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 320px;
             margin: 0 auto;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
         }
         
         .btn-primary:hover {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 32px rgba(102, 126, 234, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
         }
         
         .btn-primary:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
         
         .btn-secondary {
-            background: #6b7280;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: none;
-            padding: 16px 24px;
-            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 16px 32px;
+            border-radius: 16px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
@@ -169,53 +294,103 @@
             text-decoration: none;
             text-align: center;
             display: block;
-            width: 120%;
-            max-width: 280px;
+            width: 100%;
+            max-width: 320px;
             margin: 0 auto;
+            backdrop-filter: blur(10px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .btn-secondary:hover {
-            background: #4b5563;
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
         }
         
         .btn-secondary:active {
             transform: translateY(0);
         }
         
-        .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
+        .btn-mypage {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
             text-align: center;
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            backdrop-filter: blur(10px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 8px 24px rgba(139, 92, 246, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-mypage:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 32px rgba(139, 92, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-mypage:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
+            background: rgba(254, 242, 242, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(254, 202, 202, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.1);
         }
         
         .error-message h3 {
             color: #dc2626;
             font-size: 16px;
             margin: 0;
+            font-weight: 600;
         }
         
         .no-attendance {
-            background: white;
-            border-radius: 16px;
-            padding: 40px 24px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 48px 32px;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .no-attendance h1 {
             color: #dc2626;
-            font-size: 24px;
-            margin: 0 0 16px 0;
+            font-size: 28px;
+            margin: 0 0 20px 0;
+            font-weight: 700;
         }
         
         .no-attendance h2 {
             color: #6b7280;
-            font-size: 16px;
+            font-size: 18px;
             margin: 0;
+            font-weight: 500;
         }
         
         /* タブレット用（768px以上） */
@@ -226,45 +401,7 @@
             }
             
             .checkout-title {
-                font-size: 36px;
-            }
-            
-            .checkout-subtitle {
-                font-size: 16px;
-            }
-            
-            .checkout-card {
-                padding: 32px;
-            }
-            
-            .clock-in-info {
-                padding: 20px;
-            }
-            
-            .clock-in-time {
-                font-size: 20px;
-            }
-            
-            .form-input, .form-select {
-                padding: 16px 20px;
-                font-size: 18px;
-            }
-            
-            .btn-primary, .btn-secondary {
-                padding: 20px 32px;
-                font-size: 18px;
-            }
-        }
-        
-        /* デスクトップ用（1024px以上） */
-        @media (min-width: 1024px) {
-            .checkout-container {
-                padding: 60px;
-                max-width: 700px;
-            }
-            
-            .checkout-title {
-                font-size: 42px;
+                font-size: 40px;
             }
             
             .checkout-subtitle {
@@ -284,15 +421,88 @@
             }
             
             .form-input, .form-select {
-                padding: 20px 24px;
-                font-size: 20px;
+                padding: 28px 56px;
+                font-size: 26px;
+                min-height: 90px;
             }
             
             .btn-primary, .btn-secondary {
-                padding: 24px 40px;
+                padding: 20px 40px;
+                font-size: 18px;
+            }
+        }
+        
+        /* デスクトップ用（1024px以上） */
+        @media (min-width: 1024px) {
+            .checkout-container {
+                padding: 60px;
+                max-width: 700px;
+            }
+            
+            .checkout-title {
+                font-size: 48px;
+            }
+            
+            .checkout-subtitle {
+                font-size: 20px;
+            }
+            
+            .checkout-card {
+                padding: 48px;
+            }
+            
+            .clock-in-info {
+                padding: 28px;
+            }
+            
+            .clock-in-time {
+                font-size: 24px;
+            }
+            
+            .form-input, .form-select {
+                padding: 32px 64px;
+                font-size: 28px;
+                min-height: 100px;
+            }
+            
+            .btn-primary, .btn-secondary {
+                padding: 24px 48px;
                 font-size: 20px;
             }
         }
+        
+        /* アニメーション効果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .checkout-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .form-group {
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.5s; }
+        .form-group:nth-child(6) { animation-delay: 0.6s; }
+        .form-group:nth-child(7) { animation-delay: 0.7s; }
+        .form-group:nth-child(8) { animation-delay: 0.8s; }
+        .form-group:nth-child(9) { animation-delay: 0.9s; }
+        .form-group:nth-child(10) { animation-delay: 1.0s; }
+        .form-group:nth-child(11) { animation-delay: 1.1s; }
     </style>
 </head>
 <body>
@@ -371,14 +581,14 @@
                     </div>
                     
                     <div class="button-group">
-                        <button type="submit" class="btn-primary">退勤を確定する</button>
-                        <a href="{% url 'kintai_top' %}" class="btn-secondary">キャンセル</a>
+                        <button type="submit" class="btn-primary">✨ 退勤を確定する</button>
+                        <a href="{% url 'kintai_top' %}" class="btn-mypage">🏠 マイページに戻る</a>
                     </div>
                 </form>
             </div>
         {% else %}
             <div class="no-attendance">
-                <h1>出勤されていません</h1>
+                <h1>⚠️ 出勤されていません</h1>
                 <h2>管理者までお問い合わせください</h2>
             </div>
         {% endif %}

@@ -89,8 +89,7 @@
             padding: 0 16px;
         }
         
-        .period-btn,
-        .pie-period-btn {
+        .period-btn {
             background: #10b981;
             border: none;
             border-radius: 25px;
@@ -105,15 +104,13 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
-        .period-btn:hover,
-        .pie-period-btn:hover {
+        .period-btn:hover {
             opacity: 0.9;
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
-        .period-btn:active,
-        .pie-period-btn:active {
+        .period-btn:active {
             transform: translateY(0);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -143,8 +140,7 @@
                 padding: 0 24px;
             }
             
-            .period-btn,
-            .pie-period-btn {
+            .period-btn {
                 padding: 14px 24px;
                 font-size: 16px;
             }
@@ -172,14 +168,72 @@
                 padding: 0 32px;
             }
             
-            .period-btn,
-            .pie-period-btn {
+            .period-btn {
                 padding: 16px 32px;
                 font-size: 16px;
             }
             
             .chart-wrapper {
                 height: 500px;
+            }
+        }
+        
+        /* 月選択スタイル */
+        .month-selector {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #3b82f6;
+        }
+        
+        .month-selector-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .month-selector-header h4 {
+            color: #1f2937;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .month-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .month-btn {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .month-btn:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        
+        .month-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        @media (max-width: 768px) {
+            .month-buttons {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -218,6 +272,24 @@
                     <button class="period-btn" data-months="12">1年</button>
                 </div>
             </div>
+            
+            <!-- 月選択（1ヶ月表示の時のみ表示） -->
+            {% if months_back == 1 and available_months %}
+            <div class="month-selector" id="monthSelector" style="display: none;">
+                <div class="month-selector-header">
+                    <h4>表示する月を選択</h4>
+                </div>
+                <div class="month-buttons">
+                    {% for month in available_months %}
+                    <button class="month-btn" data-month="{{ month }}">
+                        {% with year=month|slice:":4" month_num=month|slice:"5:7" %}
+                            {{ year }}年{{ month_num|add:0 }}月
+                        {% endwith %}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
             {% endif %}
 
             <div class="stats-grid">
@@ -231,7 +303,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">生産性</div>
-                    <div class="stat-value">{{ total_mnp_close_number }}</div>
+                    <div class="stat-value">{{ productivity }}</div>
                 </div>
             </div>
             
@@ -447,9 +519,10 @@
         // 期間選択ボタンのイベントリスナー
         document.addEventListener('DOMContentLoaded', function() {
             const periodButtons = document.querySelectorAll('.period-btn');
-            const piePeriodButtons = document.querySelectorAll('.pie-period-btn');
+            const monthSelector = document.getElementById('monthSelector');
+            const monthButtons = document.querySelectorAll('.month-btn');
             const currentMonths = {{ months_back|default:6 }};
-            const currentPieMonths = {{ pie_months_back|default:6 }};
+            const selectedMonth = '{{ selected_month }}';
             
             // 現在の期間ボタンをハイライト
             periodButtons.forEach(btn => {
@@ -462,13 +535,39 @@
                 }
             });
             
+            // 1ヶ月表示の場合は月選択UIを表示
+            if (currentMonths === 1 && monthSelector) {
+                monthSelector.style.display = 'block';
+                
+                // 現在選択されている月をハイライト
+                monthButtons.forEach(btn => {
+                    if (btn.dataset.month === selectedMonth) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // 月選択ボタンクリックイベント
+                monthButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const month = this.dataset.month;
+                        const url = new URL(window.location);
+                        url.searchParams.set('months', '1');
+                        url.searchParams.set('selected_month', month);
+                        window.location.href = url.toString();
+                    });
+                });
+            }
+            
             // 期間選択ボタンクリックイベント
             periodButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const months = this.dataset.months;
                     const url = new URL(window.location);
                     url.searchParams.set('months', months);
-                    url.searchParams.set('pie_months', months); // 円グラフも同じ期間に設定
+                    // 1ヶ月以外を選択した場合は月選択をクリア
+                    if (months !== '1') {
+                        url.searchParams.delete('selected_month');
+                    }
                     window.location.href = url.toString();
                 });
             });

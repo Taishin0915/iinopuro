@@ -42,6 +42,19 @@
             {% endif %}
         </div>
         
+        <!-- ダッシュボードに戻るボタン（下部） -->
+
+
+        <div class="bottom-navigation">
+            <a href="{% url 'admin_create_user' %}" class="nav-button create-user-button">新規ユーザー作成</a>
+        </div>
+        <div class="bottom-navigation">
+            <a href="{% url 'admin_dashboard' %}" class="nav-button">← ダッシュボードに戻る</a>
+        </div>
+        
+        <!-- 新規ユーザー作成ボタン -->
+        
+        
         <!-- MyPageに戻るボタン（下部） -->
         <div class="bottom-navigation">
             <a href="{% url 'kintai_top' %}" class="nav-button">← MyPageに戻る</a>

@@ -27,13 +27,19 @@ from django.contrib import admin
 from django.urls import path, include 
 from django.contrib.auth import views as auth_views
 
+from django.shortcuts import redirect
+
+def redirect_to_login(request):
+    return redirect('/kintai/login/')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
    # path('core/', include('core.urls')), 
+    path('', redirect_to_login),  # ルートにアクセスしたらログイン画面へ
     path('kintai/',include('kintai.urls')),
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-     path("__reload__/", include("django_browser_reload.urls")),
+    path("__reload__/", include("django_browser_reload.urls")),
 ]
 
 
