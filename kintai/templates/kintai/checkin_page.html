@@ -6,6 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>入店報告</title>
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <style>
+        .back-button {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 15px;
+            font-size: 1.1em;
+            border: solid #26a69a 2px;
+            border-radius: 25px;
+            color: #26a69a; 
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            transition: transform 0.1s ease-out, background-color 0.1s ease-out;
+        }
+        
+        .back-button:hover {
+            color: #2563eb;
+            transform: translateX(-5px);
+        }
+    </style>
 </head>
 <body>
     <!-- ハンバーガーメニュー -->
@@ -74,6 +96,8 @@
                     <button type="button" id="camera-button" class="action-button">写真撮影</button>
                     
                     <button type="submit" class="action-button">報告</button>
+
+                    <a href="{% url 'kintai_top' %}" class="back-button">← マイページに戻る</a>
                 </div>
             </form>
         {% else %}
