@@ -193,7 +193,7 @@ def kintai_view(request):
 
     # 既存のcontextに、新しいデータを追加
     context = {
-        'title': '勤怠管理システム',
+        'title': 'Resulta',
         'message': '勤怠管理システムへようこそ',
         'user': request.user,      # ◀ ログインユーザー情報を追加
         'report': latest_report,   # ◀ 最新のレポート情報を追加

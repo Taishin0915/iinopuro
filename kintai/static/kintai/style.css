@@ -1790,7 +1790,6 @@ body .period-selector .period-buttons .period-btn {
     /* ヘッダー調整 */
     header h1 {
         font-size: 1.8em !important;
-        margin-bottom: 20px;
         text-align: center;
         padding: 6px 0;
     }
@@ -2294,7 +2293,6 @@ body .period-selector .period-buttons .period-btn {
     /* ヘッダー調整 */
     header h1 {
         font-size: 3em;
-        margin-bottom: 25px;
     }
     
     /* 管理者ナビゲーション */
