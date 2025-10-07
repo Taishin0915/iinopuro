@@ -35,6 +35,14 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.resulta.jp',
 ]
 
+# Cookie関連（HTTPSサイトではSecure設定が必要）
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# Cookie SameSiteを緩めてスマホ対応（iOS Safariで必須）
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
 # Application definition
 
 INSTALLED_APPS = [
