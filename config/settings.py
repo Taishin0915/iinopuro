@@ -26,7 +26,14 @@ SECRET_KEY = 'django-insecure-k=dru-h$g=1@r+ylhhu4i-oo8-*$*s$qds+ym%d@oir=_drykh
 DEBUG = True
 
 
+# すでにある場合は追記・上書きでOK
+ALLOWED_HOSTS = ['resulta.jp', 'www.resulta.jp', 'localhost', '127.0.0.1']
 
+# CSRFで許可するドメイン
+CSRF_TRUSTED_ORIGINS = [
+    'https://resulta.jp',
+    'https://www.resulta.jp',
+]
 
 # Application definition
 
