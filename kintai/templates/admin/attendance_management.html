@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" style="background: #0a0a0a;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,18 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}?v=3">
     <style>
+        /* Safari対応: htmlとbodyに直接ダークテーマを適用 */
+        html {
+            background: #0a0a0a !important;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;
+            color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
         /* 強制的にダークテーマを適用 */
         body.admin-page {
             background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;
@@ -174,7 +186,7 @@
         }
     </style>
 </head>
-<body class="admin-page">
+<body class="admin-page" style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important; color: #ffffff !important;">
     <div class="admin-container">
         <div class="admin-header">
             <h1>稼働管理</h1>
@@ -322,5 +334,12 @@
             <a href="{% url 'admin_dashboard' %}" class="nav-button">← ダッシュボードに戻る</a>
         </div>
     </div>
+    
+    <script>
+        // Safari対応: JavaScript でも強制的にダークテーマを適用
+        document.documentElement.style.background = '#0a0a0a';
+        document.body.style.background = 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%)';
+        document.body.style.color = '#ffffff';
+    </script>
 </body>
 </html>

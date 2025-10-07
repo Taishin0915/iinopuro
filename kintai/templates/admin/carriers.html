@@ -1,13 +1,26 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" style="background: #0a0a0a;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{% static 'kintai/style.css' %}?v=3">
+    <style>
+        /* Safari対応: htmlとbodyに直接ダークテーマを適用 */
+        html {
+            background: #0a0a0a !important;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;
+            color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    </style>
 </head>
-<body class="admin-page">
+<body class="admin-page" style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;">
     <div class="admin-container">
         <div class="admin-header">
             <h1>{{ title }}</h1>
@@ -465,6 +478,11 @@
     </div>
     
     <script>
+        // Safari対応: JavaScript でも強制的にダークテーマを適用
+        document.documentElement.style.background = '#0a0a0a';
+        document.body.style.background = 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%)';
+        document.body.style.color = '#ffffff';
+        
         // 期間選択ボタンのイベントリスナー
         document.addEventListener('DOMContentLoaded', function() {
             const periodButtons = document.querySelectorAll('.period-btn');
@@ -473,11 +491,15 @@
             // 現在の期間ボタンをハイライト
             periodButtons.forEach(btn => {
                 if (parseInt(btn.dataset.months) === currentMonths) {
-                    btn.style.background = '#059669';
-                    btn.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.1)';
+                    btn.style.background = 'rgba(120, 219, 255, 0.3)';
+                    btn.style.border = '1px solid rgba(120, 219, 255, 0.4)';
+                    btn.style.color = '#78dbff';
+                    btn.style.boxShadow = '0 5px 15px rgba(120, 219, 255, 0.3)';
                     btn.style.transform = 'translateY(0)';
                 } else {
-                    btn.style.background = '#10b981';
+                    btn.style.background = 'rgba(120, 219, 255, 0.2)';
+                    btn.style.border = '1px solid rgba(120, 219, 255, 0.4)';
+                    btn.style.color = '#78dbff';
                 }
             });
             

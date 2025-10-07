@@ -681,8 +681,8 @@ def admin_carriers_view(request):
     end_date = date.today()
     start_date = end_date - relativedelta(months=months_back)
     
-    # 全キャリアを取得（テスト運送を除外）
-    carriers = Carrier.objects.exclude(carrier_name="テスト運送").order_by('carrier_name')
+    # 全キャリアを取得（テスト運送と「その他」を除外）
+    carriers = Carrier.objects.exclude(carrier_name__in=["テスト運送", "その他"]).order_by('carrier_name')
     
     # 各キャリアの統計情報を計算
     carrier_stats = {}
