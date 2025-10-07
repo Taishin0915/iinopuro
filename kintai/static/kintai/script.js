@@ -174,26 +174,75 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // 撮影完了時の処理
+    // 撮影完了時の処理（画像圧縮機能付き）
     if (photoInput) {
         photoInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
 
             if (file) {
-                // FileReaderを使って撮影された画像を読み込む
-                const reader = new FileReader();
+                console.log('元の画像サイズ:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
                 
-                // 画像の読み込みが完了したら、プレビュー用のimgタグのsrcを更新
-                reader.onload = (e) => {
-                    previewImage.src = e.target.result;
-                    previewImage.style.width = '200px';
-                    previewImage.style.height = '150px';
-                    previewImage.style.objectFit = 'cover';
-                    console.log('写真が撮影されました');
-                };
-                
-                reader.readAsDataURL(file);
+                // 画像を圧縮してからプレビュー表示
+                compressImage(file, 1024, 0.7, (compressedBlob) => {
+                    console.log('圧縮後のサイズ:', (compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB');
+                    
+                    // 圧縮した画像でFileオブジェクトを置き換え
+                    const compressedFile = new File([compressedBlob], file.name, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    
+                    // DataTransferを使ってinput.filesを更新
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(compressedFile);
+                    photoInput.files = dataTransfer.files;
+                    
+                    // プレビュー表示
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewImage.src = e.target.result;
+                        previewImage.style.width = '200px';
+                        previewImage.style.height = '150px';
+                        previewImage.style.objectFit = 'cover';
+                        console.log('写真が圧縮され、プレビューに表示されました');
+                    };
+                    reader.readAsDataURL(compressedBlob);
+                });
             }
         });
+    }
+    
+    // 画像圧縮関数
+    function compressImage(file, maxWidth, quality, callback) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                // キャンバスを作成
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                // 最大幅を超える場合はリサイズ
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // キャンバスに画像を描画
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // JPEGに変換して圧縮
+                canvas.toBlob((blob) => {
+                    callback(blob);
+                }, 'image/jpeg', quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 });
