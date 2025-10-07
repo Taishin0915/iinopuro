@@ -198,47 +198,122 @@ document.addEventListener('DOMContentLoaded', () => {
     // 撮影完了時の処理（画像圧縮機能付き）
     if (photoInput) {
         photoInput.addEventListener('change', (event) => {
+            console.log('=== 写真処理開始 ===');
+            console.log('イベントタイプ:', event.type);
+            console.log('ファイル数:', event.target.files.length);
+            
             const file = event.target.files[0];
 
             if (file) {
-                console.log('元の画像サイズ:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                console.log('ファイル情報:');
+                console.log('- 名前:', file.name);
+                console.log('- サイズ:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                console.log('- タイプ:', file.type);
+                console.log('- 最終更新:', new Date(file.lastModified));
                 
-                // 画像を圧縮してからプレビュー表示（最大800px、品質50%）
-                compressImage(file, 800, 0.5, (compressedBlob) => {
-                    console.log('圧縮後のサイズ:', (compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB');
+                // デバイス判定
+                const isAndroid = /Android/i.test(navigator.userAgent);
+                console.log('- デバイス: Android =', isAndroid);
+                
+                // Android向けの特別な処理
+                if (isAndroid) {
+                    console.log('Android向けの特別処理を実行');
                     
-                    // 圧縮した画像でFileオブジェクトを置き換え
-                    const compressedFile = new File([compressedBlob], file.name, {
-                        type: 'image/jpeg',
-                        lastModified: Date.now()
-                    });
-                    
-                    // DataTransferを使ってinput.filesを更新
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(compressedFile);
-                    photoInput.files = dataTransfer.files;
-                    
-                    // プレビュー表示
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        previewImage.src = e.target.result;
-                        previewImage.style.width = '200px';
-                        previewImage.style.height = '150px';
-                        previewImage.style.objectFit = 'cover';
-                        console.log('写真が圧縮され、プレビューに表示されました');
+                    // Androidの場合、まずプレビューを直接表示してから圧縮
+                    const directReader = new FileReader();
+                    directReader.onload = (e) => {
+                        if (previewImage) {
+                            previewImage.src = e.target.result;
+                            previewImage.style.width = '200px';
+                            previewImage.style.height = '150px';
+                            previewImage.style.objectFit = 'cover';
+                            console.log('✅ Android: 直接プレビュー表示完了');
+                        }
                     };
-                    reader.readAsDataURL(compressedBlob);
-                });
+                    directReader.readAsDataURL(file);
+                    
+                    // 少し遅延してから圧縮処理を実行
+                    setTimeout(() => {
+                        console.log('Android: 遅延圧縮処理開始');
+                        compressImageForAndroid(file, photoInput);
+                    }, 500);
+                } else {
+                    // iPhone/Safari向けの通常処理
+                    console.log('iPhone/Safari向けの通常処理');
+                    compressImage(file, 800, 0.5, (compressedBlob) => {
+                        if (!compressedBlob) {
+                            console.error('画像圧縮に失敗しました');
+                            return;
+                        }
+                        
+                        console.log('圧縮完了:');
+                        console.log('- 圧縮後サイズ:', (compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB');
+                        console.log('- 圧縮後タイプ:', compressedBlob.type);
+                        
+                        // 圧縮した画像でFileオブジェクトを置き換え
+                        const compressedFile = new File([compressedBlob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        
+                        console.log('圧縮ファイル作成完了:', compressedFile.name);
+                        
+                        // DataTransferを使ってinput.filesを更新
+                        try {
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(compressedFile);
+                            photoInput.files = dataTransfer.files;
+                            console.log('input.files更新完了');
+                        } catch (error) {
+                            console.error('input.files更新エラー:', error);
+                        }
+                        
+                        // プレビュー表示
+                        console.log('プレビュー表示開始...');
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            if (previewImage) {
+                                previewImage.src = e.target.result;
+                                previewImage.style.width = '200px';
+                                previewImage.style.height = '150px';
+                                previewImage.style.objectFit = 'cover';
+                                console.log('✅ プレビュー表示完了');
+                            } else {
+                                console.error('プレビュー画像要素が見つかりません');
+                            }
+                        };
+                        reader.onerror = (error) => {
+                            console.error('FileReader エラー:', error);
+                        };
+                        reader.readAsDataURL(compressedBlob);
+                    });
+                }
+            } else {
+                console.log('ファイルが選択されていません');
             }
         });
     }
     
     // 画像圧縮関数
     function compressImage(file, maxWidth, quality, callback) {
+        console.log('compressImage開始:', {
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            maxWidth: maxWidth,
+            quality: quality
+        });
+        
         const reader = new FileReader();
         reader.onload = (e) => {
+            console.log('FileReader読み込み完了');
             const img = new Image();
             img.onload = () => {
+                console.log('画像読み込み完了:', {
+                    originalWidth: img.width,
+                    originalHeight: img.height
+                });
+                
                 // キャンバスを作成
                 const canvas = document.createElement('canvas');
                 let width = img.width;
@@ -248,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (width > maxWidth) {
                     height = (height * maxWidth) / width;
                     width = maxWidth;
+                    console.log('リサイズ実行:', { newWidth: width, newHeight: height });
                 }
                 
                 canvas.width = width;
@@ -255,15 +331,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // キャンバスに画像を描画
                 const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('Canvas context取得に失敗');
+                    callback(null);
+                    return;
+                }
+                
+                console.log('キャンバスに描画中...');
                 ctx.drawImage(img, 0, 0, width, height);
                 
                 // JPEGに変換して圧縮
+                console.log('JPEG変換開始...');
                 canvas.toBlob((blob) => {
-                    callback(blob);
+                    if (blob) {
+                        console.log('✅ 圧縮成功:', {
+                            compressedSize: blob.size,
+                            compressedType: blob.type
+                        });
+                        callback(blob);
+                    } else {
+                        console.error('❌ Blob生成に失敗');
+                        callback(null);
+                    }
                 }, 'image/jpeg', quality);
+            };
+            img.onerror = (error) => {
+                console.error('画像読み込みエラー:', error);
+                callback(null);
             };
             img.src = e.target.result;
         };
+        reader.onerror = (error) => {
+            console.error('FileReader エラー:', error);
+            callback(null);
+        };
         reader.readAsDataURL(file);
+    }
+    
+    // Android専用の画像圧縮関数
+    function compressImageForAndroid(file, photoInput) {
+        console.log('Android専用圧縮処理開始');
+        
+        // Androidでは軽い圧縮設定を使用
+        compressImage(file, 1200, 0.7, (compressedBlob) => {
+            if (!compressedBlob) {
+                console.error('Android: 圧縮に失敗、元ファイルを使用');
+                // 圧縮に失敗した場合は元ファイルをそのまま使用
+                try {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    photoInput.files = dataTransfer.files;
+                    console.log('Android: 元ファイルで input.files 更新完了');
+                } catch (error) {
+                    console.error('Android: 元ファイル設定エラー:', error);
+                }
+                return;
+            }
+            
+            console.log('Android: 圧縮成功');
+            console.log('- 圧縮後サイズ:', (compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB');
+            
+            // 圧縮した画像でFileオブジェクトを作成
+            const compressedFile = new File([compressedBlob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+            
+            // DataTransferを使ってinput.filesを更新
+            try {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(compressedFile);
+                photoInput.files = dataTransfer.files;
+                console.log('Android: 圧縮ファイルで input.files 更新完了');
+            } catch (error) {
+                console.error('Android: 圧縮ファイル設定エラー:', error);
+                // エラーの場合は元ファイルを使用
+                try {
+                    const fallbackDataTransfer = new DataTransfer();
+                    fallbackDataTransfer.items.add(file);
+                    photoInput.files = fallbackDataTransfer.files;
+                    console.log('Android: フォールバックで元ファイル使用');
+                } catch (fallbackError) {
+                    console.error('Android: フォールバックも失敗:', fallbackError);
+                }
+            }
+        });
     }
 });
