@@ -3,9 +3,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.90">
-    <title>ログイン - 勤怠管理システム</title>
-    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>勤怠管理システム</title>
+
+    <!-- ✅ PWA設定 -->
+    <link rel="manifest" href="{% static 'kintai/manifest.json' %}">
+    <meta name="theme-color" content="#007AFF">
+
+    <!-- ✅ iPhone専用PWA設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="勤怠管理">
+
+    <!-- ✅ ホーム画面アイコン -->
+    <link rel="apple-touch-icon" href="{% static 'kintai/icons/icon-192x192.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'kintai/icons/icon-192x192.png' %}">
     <style>
         /* ========================================
            Admin-Style Login Page
