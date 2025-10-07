@@ -80,17 +80,14 @@
                     <img id="preview-image" src="{% static 'kintai/images/no_image.svg' %}" alt="No Image" class="preview-image">
                 </div>
 
-                <!-- フォームフィールドを手動でレンダリングしてDjangoの自動UIを回避 -->
-                <!-- テスト中: ファイル選択も可能にするため、capture属性をコメントアウト -->
+                <!-- カメラ専用のファイル入力（ファイル選択は無効） -->
                 <input type="file" 
                        accept="image/*" 
                        id="photo-upload-input" 
                        name="upload_img" 
                        multiple="false"
+                       capture="environment"
                        style="display: none !important;">
-                       <!-- capture="environment" -->
-                       <!-- class="hidden" --> 
-                       <!-- style="display: none !important; visibility: hidden !important; position: absolute !important; left: -9999px !important;"> -->
                 
                 <div class="button-group">
                     <button type="button" id="camera-button" class="action-button">写真撮影</button>

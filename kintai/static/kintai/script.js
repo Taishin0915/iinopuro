@@ -170,6 +170,12 @@ document.addEventListener('DOMContentLoaded', () => {
             photoInput.click();
             console.log('カメラアプリを起動します');
         });
+        
+        // ファイル選択ダイアログを無効化（カメラのみ有効）
+        photoInput.addEventListener('click', (event) => {
+            // モバイルデバイスではcapture属性によりカメラが優先される
+            console.log('ファイル入力がクリックされました - カメラを起動します');
+        });
     }
     
     // 撮影完了時の処理

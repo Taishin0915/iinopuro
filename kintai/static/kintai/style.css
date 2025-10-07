@@ -2167,7 +2167,7 @@ body .period-selector .period-buttons .period-btn {
     
     .attendance-table th,
     .attendance-table td {
-        padding: 20px 15px !important;
+        padding: 15px 12px !important;
         font-size: 1.25em !important;
     }
     
@@ -3002,13 +3002,13 @@ body .period-selector .period-buttons .period-btn {
     text-align: center;
     font-weight: 500;
     font-size: 0.9em;
-    letter-spacing: 0.5px;
+    letter-spacing: -1.5px;
     width: 33.33%;
     box-sizing: border-box;
 }
 
 .attendance-table th:nth-child(1) {
-    width: 30%;
+    width: 29%;
     text-align: center;
     padding-right: 15px;
 }
