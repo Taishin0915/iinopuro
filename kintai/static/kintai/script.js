@@ -167,8 +167,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cameraButton && photoInput) {
         cameraButton.addEventListener('click', () => {
             console.log('カメラボタンがクリックされました');
-            // シンプルにファイル入力をクリックしてカメラを起動
-            // capture="environment"属性により、モバイルではカメラが起動します
+            
+            // デバイス判定
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            console.log('デバイス判定 - Android:', isAndroid);
+            
+            // Androidの場合、より確実にカメラのみを起動するための設定
+            if (isAndroid) {
+                // Android向けの最適化された設定
+                photoInput.setAttribute('accept', 'image/*');
+                photoInput.setAttribute('capture', 'camera');
+                
+                // 一時的にmultiple属性を削除（ファイル選択を制限）
+                photoInput.removeAttribute('multiple');
+                
+                console.log('Android向けの設定を適用しました');
+            } else {
+                // iPhone/Safari向けの設定
+                photoInput.setAttribute('accept', 'image/*');
+                photoInput.setAttribute('capture', 'environment');
+                console.log('iPhone/Safari向けの設定を適用しました');
+            }
+            
+            // ファイル入力をクリックしてカメラを起動
             photoInput.click();
             console.log('ファイル入力をクリックしました');
         });
