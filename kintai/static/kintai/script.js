@@ -166,31 +166,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // カメラボタンがクリックされた時の処理
     if (cameraButton && photoInput) {
         cameraButton.addEventListener('click', () => {
+            console.log('カメラボタンがクリックされました');
+            
             // モバイルデバイスでカメラを直接起動
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                // WebカメラAPIを使用してカメラを直接起動
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                    .then(stream => {
-                        // カメラストリームを取得できた場合、ファイル入力でカメラを起動
-                        photoInput.click();
-                        // ストリームを停止
-                        stream.getTracks().forEach(track => track.stop());
-                    })
-                    .catch(err => {
-                        console.log('WebカメラAPIが利用できないため、ファイル入力でカメラを起動します');
-                        photoInput.click();
+                console.log('WebカメラAPIを使用してカメラを起動します');
+                
+                // カメラアクセス権限を要求
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    } 
+                })
+                .then(stream => {
+                    console.log('カメラストリームを取得しました');
+                    
+                    // ストリームを即座に停止（権限取得のみが目的）
+                    stream.getTracks().forEach(track => {
+                        track.stop();
+                        console.log('カメラストリームを停止しました');
                     });
+                    
+                    // 権限取得後、ファイル入力をクリックしてカメラを起動
+                    setTimeout(() => {
+                        console.log('ファイル入力をクリックしてカメラを起動します');
+                        photoInput.click();
+                    }, 100);
+                })
+                .catch(err => {
+                    console.log('WebカメラAPIエラー:', err);
+                    console.log('フォールバック: ファイル入力でカメラを起動します');
+                    photoInput.click();
+                });
             } else {
-                // WebカメラAPIが利用できない場合、ファイル入力でカメラを起動
+                console.log('WebカメラAPIが利用できないため、ファイル入力でカメラを起動します');
                 photoInput.click();
             }
-            console.log('カメラアプリを起動します');
         });
         
-        // ファイル選択ダイアログを無効化（カメラのみ有効）
-        photoInput.addEventListener('click', (event) => {
-            // モバイルデバイスではcapture属性によりカメラが優先される
-            console.log('ファイル入力がクリックされました - カメラを起動します');
+        // ファイル入力のchangeイベントでカメラ起動を確認
+        photoInput.addEventListener('change', (event) => {
+            console.log('ファイル入力のchangeイベントが発生しました');
+            if (event.target.files && event.target.files.length > 0) {
+                console.log('カメラから画像が取得されました');
+            }
         });
     }
     
