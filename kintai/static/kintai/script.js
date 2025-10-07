@@ -166,8 +166,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // カメラボタンがクリックされた時の処理
     if (cameraButton && photoInput) {
         cameraButton.addEventListener('click', () => {
-            // 隠れたファイル入力要素をクリックしてカメラを起動
-            photoInput.click();
+            // モバイルデバイスでカメラを直接起動
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                // WebカメラAPIを使用してカメラを直接起動
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(stream => {
+                        // カメラストリームを取得できた場合、ファイル入力でカメラを起動
+                        photoInput.click();
+                        // ストリームを停止
+                        stream.getTracks().forEach(track => track.stop());
+                    })
+                    .catch(err => {
+                        console.log('WebカメラAPIが利用できないため、ファイル入力でカメラを起動します');
+                        photoInput.click();
+                    });
+            } else {
+                // WebカメラAPIが利用できない場合、ファイル入力でカメラを起動
+                photoInput.click();
+            }
             console.log('カメラアプリを起動します');
         });
         
