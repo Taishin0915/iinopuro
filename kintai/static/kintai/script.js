@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (file) {
                 console.log('元の画像サイズ:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
                 
-                // 画像を圧縮してからプレビュー表示
-                compressImage(file, 1024, 0.7, (compressedBlob) => {
+                // 画像を圧縮してからプレビュー表示（最大800px、品質50%）
+                compressImage(file, 800, 0.5, (compressedBlob) => {
                     console.log('圧縮後のサイズ:', (compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB');
                     
                     // 圧縮した画像でFileオブジェクトを置き換え
