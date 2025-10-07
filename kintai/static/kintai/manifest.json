@@ -1,7 +1,7 @@
 {
-  "name": "Risulta",
-  "short_name": "Risulta",
-  "description": "通信業界向け 勤怠管理システム Risulta",
+  "name": "Resulta",
+  "short_name": "Resulta",
+  "description": "通信業界向け 勤怠管理システム Resulta",
   "start_url": "/kintai/",
   "scope": "/kintai/",
   "display": "standalone",
