@@ -573,14 +573,59 @@ def kintai_clockout_view(request):
 
     # 「退勤を確定」ボタンが押された場合 (POSTリクエスト)
     if request.method == 'POST':
+        print(f"DEBUG: POST request received for user {request.user.username}")
+        print(f"DEBUG: POST data: {request.POST}")
+        
         form = ClockOutReportForm(request.POST)
         if form.is_valid():
-            # 既存のレポートに退勤時刻を設定
+            print(f"DEBUG: Form is valid")
+            print(f"DEBUG: Form cleaned_data: {form.cleaned_data}")
+            
+            # 既存のレポートがある場合は更新、ない場合は新規作成
             if last_clock_in:
+                print(f"DEBUG: Updating existing report: {last_clock_in.id}")
+                # 既存のレポートに退勤時刻と業務内容を設定
                 last_clock_in.clock_out_time = timezone.now()
+                
+                # フォームから取得したデータで既存レポートを更新
+                last_clock_in.carrier = form.cleaned_data['carrier']
+                last_clock_in.close_number = form.cleaned_data['close_number']
+                last_clock_in.swing_number = form.cleaned_data['swing_number']
+                last_clock_in.new_close_number = form.cleaned_data['new_close_number']
+                last_clock_in.upg_close_number = form.cleaned_data['upg_close_number']
+                last_clock_in.mnp_close_number = form.cleaned_data['mnp_close_number']
+                last_clock_in.tv_close_number = form.cleaned_data['tv_close_number']
+                last_clock_in.net_close_number = form.cleaned_data['net_close_number']
+                last_clock_in.tel_close_number = form.cleaned_data['tel_close_number']
+                last_clock_in.tos_close_number = form.cleaned_data['tos_close_number']
+                
                 last_clock_in.save()
+                print(f"DEBUG: Report updated successfully")
+            else:
+                print(f"DEBUG: No existing report found, creating new one")
+                # 既存のレポートがない場合は新規作成
+                new_report = Report.objects.create(
+                    user=request.user,
+                    carrier=form.cleaned_data['carrier'],
+                    report_type='WIND',  # 退勤時はWINDレポート
+                    work_date=today,
+                    close_number=form.cleaned_data['close_number'],
+                    swing_number=form.cleaned_data['swing_number'],
+                    new_close_number=form.cleaned_data['new_close_number'],
+                    upg_close_number=form.cleaned_data['upg_close_number'],
+                    mnp_close_number=form.cleaned_data['mnp_close_number'],
+                    tv_close_number=form.cleaned_data['tv_close_number'],
+                    net_close_number=form.cleaned_data['net_close_number'],
+                    tel_close_number=form.cleaned_data['tel_close_number'],
+                    tos_close_number=form.cleaned_data['tos_close_number'],
+                    clock_out_time=timezone.now()
+                )
+                print(f"DEBUG: New report created: {new_report.id}")
             
             return redirect('kintai_checkout_complete')
+        else:
+            print(f"DEBUG: Form is not valid")
+            print(f"DEBUG: Form errors: {form.errors}")
 
     # 通常通りページを表示する場合 (GETリクエスト)
     else:
