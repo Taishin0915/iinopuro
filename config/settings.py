@@ -27,7 +27,14 @@ DEBUG = True
 
 
 # すでにある場合は追記・上書きでOK
-ALLOWED_HOSTS = ['resulta.jp', 'www.resulta.jp', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'resulta.jp',
+    'www.resulta.jp',
+    'ec2-3-107-29-219.ap-southeast-2.compute.amazonaws.com',
+    '3.107.29.219',
+    'localhost',
+    '127.0.0.1',
+]
 
 # CSRFで許可するドメイン
 CSRF_TRUSTED_ORIGINS = [
