@@ -124,6 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoInput = document.getElementById('photo-upload-input');
     const previewImage = document.getElementById('preview-image');
     const cameraButton = document.getElementById('camera-button');
+    const androidGuide = document.getElementById('android-camera-guide');
+    
+    // Androidデバイスの場合、指示メッセージを表示
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (isAndroid && androidGuide) {
+        androidGuide.style.display = 'block';
+        console.log('Android向け指示メッセージを表示しました');
+    }
     
     // ファイル選択に関連する不要な要素を削除 - テスト中: コメントアウト
     /*
@@ -182,6 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 photoInput.removeAttribute('multiple');
                 
                 console.log('Android向けの設定を適用しました');
+                
+                // Android向けの追加指示を表示
+                showAndroidCameraInstructions();
             } else {
                 // iPhone/Safari向けの設定
                 photoInput.setAttribute('accept', 'image/*');
@@ -192,6 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // ファイル入力をクリックしてカメラを起動
             photoInput.click();
             console.log('ファイル入力をクリックしました');
+            
+            // Android向けのタイムアウト処理
+            if (isAndroid) {
+                setupAndroidCameraTimeout();
+            }
         });
     }
     
@@ -366,6 +382,213 @@ document.addEventListener('DOMContentLoaded', () => {
             callback(null);
         };
         reader.readAsDataURL(file);
+    }
+    
+    // Android向けのカメラ指示表示関数
+    function showAndroidCameraInstructions() {
+        // 既存のモーダルがあれば削除
+        const existingModal = document.getElementById('android-camera-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // モーダル要素を作成
+        const modal = document.createElement('div');
+        modal.id = 'android-camera-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        `;
+        
+        modalContent.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 16px;">📷</div>
+            <h3 style="margin: 0 0 16px 0; color: #333; font-size: 18px;">カメラアプリでの操作</h3>
+            <p style="margin: 0 0 20px 0; color: #666; line-height: 1.5; font-size: 14px;">
+                写真を撮影した後、必ず<br>
+                <strong style="color: #2196f3;">「✓」ボタンまたは「OK」ボタン</strong><br>
+                を押して写真を確定してください
+            </p>
+            <button id="android-modal-close" style="
+                background: #2196f3;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 12px 24px;
+                font-size: 14px;
+                cursor: pointer;
+                font-weight: 500;
+            ">理解しました</button>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // 閉じるボタンのイベント
+        document.getElementById('android-modal-close').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // モーダル外クリックで閉じる
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        // 10秒後に自動で閉じる
+        setTimeout(() => {
+            if (document.getElementById('android-camera-modal')) {
+                modal.remove();
+            }
+        }, 10000);
+        
+        console.log('Android向けカメラ指示モーダルを表示しました');
+    }
+    
+    // Android向けのカメラタイムアウト処理
+    function setupAndroidCameraTimeout() {
+        let timeoutId;
+        let hasFileSelected = false;
+        
+        // ファイル選択を監視
+        const checkFileSelection = () => {
+            if (photoInput.files && photoInput.files.length > 0) {
+                hasFileSelected = true;
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                console.log('Android: ファイル選択を確認しました');
+            }
+        };
+        
+        // 30秒後にタイムアウト処理
+        timeoutId = setTimeout(() => {
+            if (!hasFileSelected) {
+                console.log('Android: カメラタイムアウト - 指示メッセージを表示');
+                showAndroidTimeoutMessage();
+            }
+        }, 30000);
+        
+        // ファイル選択の監視を開始
+        const intervalId = setInterval(() => {
+            checkFileSelection();
+            if (hasFileSelected) {
+                clearInterval(intervalId);
+            }
+        }, 1000);
+        
+        // 60秒後に監視を停止
+        setTimeout(() => {
+            clearInterval(intervalId);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        }, 60000);
+    }
+    
+    // Android向けのタイムアウトメッセージ表示
+    function showAndroidTimeoutMessage() {
+        const modal = document.createElement('div');
+        modal.id = 'android-timeout-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        `;
+        
+        modalContent.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 16px;">⏰</div>
+            <h3 style="margin: 0 0 16px 0; color: #333; font-size: 18px;">写真の確定をお忘れではありませんか？</h3>
+            <p style="margin: 0 0 20px 0; color: #666; line-height: 1.5; font-size: 14px;">
+                カメラアプリで写真を撮影した後、<br>
+                <strong style="color: #f44336;">「✓」ボタンまたは「OK」ボタン</strong><br>
+                を押して写真を確定してください
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="android-timeout-retry" style="
+                    background: #2196f3;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 12px 16px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">再撮影</button>
+                <button id="android-timeout-close" style="
+                    background: #666;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 12px 16px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">閉じる</button>
+            </div>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // 再撮影ボタン
+        document.getElementById('android-timeout-retry').addEventListener('click', () => {
+            modal.remove();
+            if (cameraButton) {
+                cameraButton.click();
+            }
+        });
+        
+        // 閉じるボタン
+        document.getElementById('android-timeout-close').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // モーダル外クリックで閉じる
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
     
     // Android専用の画像圧縮関数
