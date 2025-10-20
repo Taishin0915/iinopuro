@@ -1,0 +1,579 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ target_user.username }}</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <style>
+        /* スマホ用グラフスタイル */
+        .chart-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-header {
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            color: #374151;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            text-align: center;
+        }
+        
+        .legend-selector {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .legend-item:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #e5e7eb;
+        }
+        
+        .legend-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .legend-item.disabled {
+            opacity: 0.3;
+        }
+        
+        .legend-item.disabled .legend-label {
+            text-decoration: line-through;
+        }
+        
+        .period-selector {
+            margin: 24px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .period-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        
+        .period-btn {
+            background: #10b981;
+            border: none;
+            border-radius: 25px;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .period-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .period-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin: 0 auto;
+        }
+        
+        /* タブレット用（768px以上） */
+        @media (min-width: 768px) {
+            .chart-section {
+                padding: 24px;
+                margin: 24px 0;
+            }
+            
+            .chart-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .period-buttons {
+                max-width: 400px;
+                gap: 12px;
+                padding: 0 24px;
+            }
+            
+            .period-btn {
+                padding: 14px 24px;
+                font-size: 16px;
+            }
+            
+            .chart-wrapper {
+                height: 400px;
+            }
+        }
+        
+        /* デスクトップ用（1024px以上） */
+        @media (min-width: 1024px) {
+            .chart-section {
+                padding: 32px;
+                margin: 32px 0;
+            }
+            
+            .chart-title {
+                font-size: 24px;
+                margin-bottom: 24px;
+            }
+            
+            .period-buttons {
+                max-width: 500px;
+                gap: 16px;
+                padding: 0 32px;
+            }
+            
+            .period-btn {
+                padding: 16px 32px;
+                font-size: 16px;
+            }
+            
+            .chart-wrapper {
+                height: 500px;
+            }
+        }
+        
+        /* 月選択スタイル */
+        .month-selector {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid #3b82f6;
+        }
+        
+        .month-selector-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .month-selector-header h4 {
+            color: #1f2937;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .month-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .month-btn {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .month-btn:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        
+        .month-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        @media (max-width: 768px) {
+            .month-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="admin-page">
+    <div class="logout-section">
+        <a href="{% url 'logout' %}" class="logout-button">ログアウト</a>
+    </div>
+    
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>{{ title }}</h1>
+            <p>{{ target_user.username }}さんの個人実績</p>
+        </div>
+        
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="nav-button">ダッシュボード</a>
+            <a href="{% url 'admin_users' %}" class="nav-button">ユーザー管理</a>
+            <a href="{% url 'admin_attendance_management' %}" class="nav-button">稼働管理</a>
+            <a href="{% url 'admin_carriers' %}" class="nav-button">キャリア管理</a>
+        </nav>
+        
+        <div class="admin-content">
+            <div class="user-info">
+                <h2>{{ target_user.username }}さんの実績</h2>
+                <p>管理者による個人実績確認</p>
+            </div>
+            
+            {% if monthly_stats %}
+            <!-- 期間選択 -->
+            <div class="period-selector">
+                <div class="period-buttons">
+                    <button class="period-btn" data-months="1">1ヶ月</button>
+                    <button class="period-btn" data-months="3">3ヶ月</button>
+                    <button class="period-btn" data-months="6">6ヶ月</button>
+                    <button class="period-btn" data-months="12">1年</button>
+                </div>
+            </div>
+            
+            <!-- 月選択（1ヶ月表示の時のみ表示） -->
+            {% if months_back == 1 and available_months %}
+            <div class="month-selector" id="monthSelector">
+                <div class="month-selector-header">
+                    <h4>表示する月を選択</h4>
+                </div>
+                <div class="month-buttons">
+                    {% for month in available_months %}
+                    <button class="month-btn" data-month="{{ month }}">
+                        {% with year=month|slice:":4" month_num=month|slice:"5:7" %}
+                            {{ year }}年{{ month_num|add:0 }}月
+                        {% endwith %}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">総稼働日数</div>
+                    <div class="stat-value">{{ total_reports }}件</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">総クローズ件数</div>
+                    <div class="stat-value">{{ total_close_number }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">生産性</div>
+                    <div class="stat-value">{{ productivity }}</div>
+                </div>
+            </div>
+            
+            {% if monthly_stats %}
+            <!-- 月別クローズ件数 -->
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h3 class="chart-title">月別クローズ件数</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="closeChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- クローズ件数内訳 -->
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h3 class="chart-title">クローズ件数内訳</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- MyPageに戻るボタン（下部） -->
+        <div class="bottom-navigation">
+            <a href="{% url 'admin_users' %}" class="nav-button">← ユーザー管理に戻る</a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script>
+        {% if monthly_stats %}
+        // グラフインスタンスを保存する変数
+        let closeChart = null;
+        let pieChart = null;
+        
+        // 月別クローズ件数グラフ
+        const closeCtx = document.getElementById('closeChart').getContext('2d');
+        closeChart = new Chart(closeCtx, {
+            type: 'line',
+            data: {
+                labels: {{ monthly_labels|safe }},
+                datasets: [{
+                    label: 'クローズ件数',
+                    data: {{ monthly_close_totals|safe }},
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: '新規件数',
+                    data: {{ monthly_new_close_totals|safe }},
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'UPG件数',
+                    data: {{ monthly_upg_close_totals|safe }},
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                }, {
+                    label: 'MNP件数',
+                    data: {{ monthly_mnp_close_totals|safe }},
+                    borderColor: '#ec4899',
+                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#374151',
+                        bodyColor: '#374151',
+                        borderColor: '#e5e7eb',
+                        borderWidth: 1,
+                        padding: 12,
+                        bodyFont: {
+                            size: 14
+                        },
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e5e7eb'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 円グラフ（クローズ件数内訳）
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        pieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['新規件数', 'UPG件数', 'MNP件数', 'その他'],
+                datasets: [{
+                    data: {{ pie_chart_data|safe }},
+                    backgroundColor: [
+                        '#f59e0b',
+                        '#3b82f6',
+                        '#ec4899',
+                        '#6b7280'
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                    spacing: 2,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#374151',
+                        bodyColor: '#374151',
+                        borderColor: '#e5e7eb',
+                        borderWidth: 1,
+                        padding: 12,
+                        bodyFont: {
+                            size: 14
+                        },
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toFixed(1) + '%';
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#ffffff',
+                        font: {
+                            weight: 'bold',
+                            size: 14
+                        },
+                        formatter: function(value, context) {
+                            if (value > 5) { // 5%以上のセクションのみ表示
+                                return value.toFixed(1) + '%';
+                            }
+                            return '';
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+        
+        // 期間選択ボタンのイベントリスナー
+        document.addEventListener('DOMContentLoaded', function() {
+            const periodButtons = document.querySelectorAll('.period-btn');
+            const monthSelector = document.getElementById('monthSelector');
+            const monthButtons = document.querySelectorAll('.month-btn');
+            const currentMonths = {{ months_back|default:6 }};
+            const selectedMonth = '{{ selected_month }}';
+            
+            // 現在の期間ボタンをハイライト
+            periodButtons.forEach(btn => {
+                if (parseInt(btn.dataset.months) === currentMonths) {
+                    btn.style.background = '#059669';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.1)';
+                    btn.style.transform = 'translateY(0)';
+                } else {
+                    btn.style.background = '#10b981';
+                }
+            });
+            
+            // 1ヶ月表示の場合は月選択UIを表示
+            if (currentMonths === 1 && monthSelector) {
+                monthSelector.style.display = 'block';
+                
+                // 現在選択されている月をハイライト
+                monthButtons.forEach(btn => {
+                    if (btn.dataset.month === selectedMonth) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // 月選択ボタンクリックイベント
+                monthButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const month = this.dataset.month;
+                        const url = new URL(window.location);
+                        url.searchParams.set('months', '1');
+                        url.searchParams.set('selected_month', month);
+                        window.location.href = url.toString();
+                    });
+                });
+            }
+            
+            // 期間選択ボタンクリックイベント
+            periodButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const months = this.dataset.months;
+                    const url = new URL(window.location);
+                    url.searchParams.set('months', months);
+                    // 1ヶ月以外を選択した場合は月選択をクリア
+                    if (months !== '1') {
+                        url.searchParams.delete('selected_month');
+                    }
+                    window.location.href = url.toString();
+                });
+            });
+            
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
