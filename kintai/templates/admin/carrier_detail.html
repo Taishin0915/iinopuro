@@ -1,0 +1,814 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja" style="background: #0a0a0a;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ carrier.carrier_name }} - 詳細</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}?v=3">
+    <style>
+        /* Safari対応: htmlとbodyに直接ダークテーマを適用 */
+        html {
+            background: #0a0a0a !important;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;
+            color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        body.admin-page {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%);
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.admin-page::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-header h1 {
+            color: #78dbff;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(120, 219, 255, 0.6);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .admin-header p {
+            color: #888;
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(120, 219, 255, 0.2);
+            border: 1px solid rgba(120, 219, 255, 0.4);
+            color: #78dbff;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+        }
+
+        .back-button:hover {
+            background: rgba(120, 219, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(120, 219, 255, 0.2);
+        }
+
+        .carrier-card {
+            background: rgba(120, 219, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3),
+                        0 0 0 1px rgba(255, 255, 255, 0.05),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .carrier-card:hover {
+            background: rgba(120, 219, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4),
+                        0 0 0 1px rgba(120, 219, 255, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+        
+        .carrier-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .carrier-header h3 {
+            color: #78dbff;
+            font-size: 1.5em;
+            font-weight: 300;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(120, 219, 255, 0.5);
+            letter-spacing: 0.5px;
+        }
+        
+        .carrier-summary {
+            margin-bottom: 24px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .summary-item {
+            background: rgba(120, 219, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            backdrop-filter: blur(15px);
+        }
+        
+        .summary-label {
+            color: #78dbff;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        
+        .summary-value {
+            color: #78dbff;
+            font-size: 1.3em;
+            font-weight: 300;
+            text-shadow: 0 0 15px rgba(120, 219, 255, 0.4);
+        }
+        
+        .monthly-details {
+            margin-top: 24px;
+        }
+        
+        .monthly-details h4 {
+            color: #78dbff;
+            font-size: 1.1em;
+            font-weight: 400;
+            margin: 0 0 16px 0;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        
+        .monthly-stats {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .monthly-card {
+            background: rgba(120, 219, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            backdrop-filter: blur(15px);
+        }
+        
+        .monthly-header {
+            color: #78dbff;
+            font-size: 1em;
+            font-weight: 400;
+            margin-bottom: 12px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        
+        .monthly-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .monthly-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .monthly-label {
+            color: #78dbff;
+            font-size: 0.85em;
+            margin-bottom: 2px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+        }
+        
+        .monthly-value {
+            color: #78dbff;
+            font-size: 1em;
+            font-weight: 300;
+            text-shadow: 0 0 15px rgba(120, 219, 255, 0.4);
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 24px;
+            color: #78dbff;
+            font-size: 1em;
+            opacity: 0.7;
+        }
+
+        /* 期間選択スタイル */
+        .period-selector {
+            background: rgba(120, 219, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            backdrop-filter: blur(15px);
+        }
+        
+        .period-info {
+            text-align: center;
+            margin-bottom: 16px;
+            color: #78dbff;
+            font-size: 14px;
+        }
+        
+        .period-info p {
+            color: #78dbff;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .period-duration {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .period-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+        
+        .period-btn {
+            background: rgba(120, 219, 255, 0.2);
+            color: #78dbff;
+            border: 1px solid rgba(120, 219, 255, 0.4);
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .period-btn:hover {
+            background: rgba(120, 219, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .period-btn.active {
+            background: rgba(120, 219, 255, 0.4);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (min-width: 768px) {
+            .summary-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .monthly-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .carrier-header h3 {
+                font-size: 1.8em;
+            }
+            
+            .summary-label {
+                font-size: 0.9em;
+            }
+            
+            .summary-value {
+                font-size: 1.5em;
+            }
+            
+            .monthly-header {
+                font-size: 1.1em;
+            }
+            
+            .monthly-label {
+                font-size: 0.9em;
+            }
+            
+            .monthly-value {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body class="admin-page">
+    <div class="admin-container">
+        <a href="{% url 'admin_carriers' %}" class="back-button">← キャリア一覧に戻る</a>
+
+        <div class="admin-header">
+            <h1>{{ carrier.carrier_name }}</h1>
+            <p>キャリア詳細情報</p>
+        </div>
+
+        <div class="carrier-card">
+            <!-- 期間選択 -->
+            <div class="period-selector">
+                <div class="period-info">
+                    <div>表示期間:</div>
+                    <p>{{ start_date|date:"Y年m月" }} ～ {{ end_date|date:"Y年m月" }}</p>
+                    <p class="period-duration">({{ months_back }}ヶ月間)</p>
+                </div>
+                <div class="period-buttons">
+                    <button class="period-btn" data-months="1">1ヶ月</button>
+                    <button class="period-btn" data-months="3">3ヶ月</button>
+                    <button class="period-btn" data-months="6">半年</button>
+                    <button class="period-btn" data-months="12">一年</button>
+                </div>
+            </div>
+            
+            <div class="carrier-summary">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">稼働日数</div>
+                        <div class="summary-value">{{ stats.total_work_days }}日</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">総クローズ</div>
+                        <div class="summary-value">{{ stats.total_close }}件</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">新規件数</div>
+                        <div class="summary-value">{{ stats.total_new }}件</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">UPG件数</div>
+                        <div class="summary-value">{{ stats.total_upg }}件</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">MNP件数</div>
+                        <div class="summary-value">{{ stats.total_mnp }}件</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <!-- 棒グラフ -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h4 class="chart-title">月別推移</h4>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="monthlyBarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 円グラフ -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h4 class="chart-title">クローズ件数内訳</h4>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="closeTypePieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+            <script>
+                // Chart.jsプラグインの登録
+                Chart.register(ChartDataLabels);
+                
+                document.addEventListener('DOMContentLoaded', function() {
+                    // 期間選択ボタンの処理
+                    const periodButtons = document.querySelectorAll('.period-btn');
+                    const currentMonths = {{ months_back|default:3 }};
+                    
+                    // 現在の期間ボタンをアクティブにする
+                    periodButtons.forEach(btn => {
+                        if (parseInt(btn.dataset.months) === currentMonths) {
+                            btn.classList.add('active');
+                        }
+                    });
+                    
+                    // 期間ボタンクリック時の処理
+                    periodButtons.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const months = this.dataset.months;
+                            const url = new URL(window.location);
+                            url.searchParams.set('months', months);
+                            window.location.href = url.toString();
+                        });
+                    });
+                    
+                    // 月別データの準備
+                    const monthlyData = {
+                        labels: [{% for month, month_stats in stats.monthly_stats.items %}'{{ month }}月',{% endfor %}],
+                        workDays: [{% for month, month_stats in stats.monthly_stats.items %}{{ month_stats.work_days }},{% endfor %}],
+                        totalClose: [{% for month, month_stats in stats.monthly_stats.items %}{{ month_stats.total_close }},{% endfor %}],
+                        productivity: [{% for month, month_stats in stats.monthly_stats.items %}{{ month_stats.productivity }},{% endfor %}]
+                    };
+
+                    // グラフインスタンスを保存する変数
+                    let monthlyBarChart = null;
+                    let closeTypePieChart = null;
+                    
+                    // 折れ線グラフの設定
+                    const barCtx = document.getElementById('monthlyBarChart').getContext('2d');
+                    monthlyBarChart = new Chart(barCtx, {
+                        type: 'line',
+                        data: {
+                            labels: monthlyData.labels,
+                            datasets: [{
+                                label: '稼働日数',
+                                data: monthlyData.workDays,
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgba(34, 197, 94, 1)',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                yAxisID: 'y'
+                            }, {
+                                label: '総クローズ',
+                                data: monthlyData.totalClose,
+                                backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                                borderColor: 'rgba(249, 115, 22, 1)',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgba(249, 115, 22, 1)',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                yAxisID: 'y'
+                            }, {
+                                label: '生産性',
+                                data: monthlyData.productivity,
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                yAxisID: 'y1'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: {
+                                    top: 20,
+                                    bottom: 20,
+                                    left: 10,
+                                    right: 10
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    ticks: {
+                                        color: '#6b7280',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    position: 'left',
+                                    grid: {
+                                        color: 'rgba(107, 114, 128, 0.1)'
+                                    },
+                                    ticks: {
+                                        color: '#6b7280',
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: '件数',
+                                        color: '#6b7280',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                y1: {
+                                    beginAtZero: true,
+                                    position: 'right',
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    ticks: {
+                                        color: '#6b7280',
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: '生産性（件/日）',
+                                        color: '#6b7280',
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#374151',
+                                        usePointStyle: true,
+                                        pointStyle: 'rect',
+                                        padding: 15,
+                                        font: {
+                                            size: 11
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    enabled: true,
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#ffffff',
+                                    borderColor: '#e5e7eb',
+                                    borderWidth: 1,
+                                    cornerRadius: 8,
+                                    displayColors: true,
+                                    callbacks: {
+                                        title: function(context) {
+                                            return context[0].label;
+                                        },
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.parsed.y + '件';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // 円グラフの設定
+                    const pieCtx = document.getElementById('closeTypePieChart').getContext('2d');
+                    closeTypePieChart = new Chart(pieCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['新規件数', 'UPG件数', 'MNP件数'],
+                            datasets: [{
+                                data: [
+                                    {{ stats.total_new }},
+                                    {{ stats.total_upg }},
+                                    {{ stats.total_mnp }}
+                                ],
+                                backgroundColor: [
+                                    'rgba(249, 115, 22, 0.8)',
+                                    'rgba(59, 130, 246, 0.8)',
+                                    'rgba(236, 72, 153, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(249, 115, 22, 1)',
+                                    'rgba(59, 130, 246, 1)',
+                                    'rgba(236, 72, 153, 1)'
+                                ],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#374151',
+                                        usePointStyle: true,
+                                        pointStyle: 'rect'
+                                    }
+                                },
+                                datalabels: {
+                                    color: '#ffffff',
+                                    font: {
+                                        weight: 'bold'
+                                    },
+                                    formatter: function(value, context) {
+                                        // 初期表示時は全データで計算
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        
+                                        if (total === 0) return '0%';
+                                        
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return percentage + '%';
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
+
+            <style>
+                .charts-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    margin-top: 24px;
+                }
+
+                .chart-section {
+                    background: #ffffff;
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e5e7eb;
+                }
+
+                .chart-header {
+                    margin-bottom: 16px;
+                    text-align: center;
+                }
+
+                .chart-title {
+                    color: #374151;
+                    font-size: 1.1em;
+                    font-weight: 600;
+                    margin: 0;
+                    letter-spacing: 0.3px;
+                }
+                
+                .legend-selector {
+                    display: flex;
+                    justify-content: center;
+                    gap: 16px;
+                    margin-bottom: 16px;
+                    flex-wrap: nowrap;
+                }
+                
+                .legend-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    cursor: pointer;
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                    transition: all 0.3s ease;
+                }
+                
+                .legend-item:hover {
+                    background-color: rgba(120, 219, 255, 0.1);
+                }
+                
+                .legend-color {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 4px;
+                    border: 2px solid #ffffff;
+                    box-shadow: 0 0 0 1px rgba(120, 219, 255, 0.3);
+                }
+                
+                .legend-label {
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: #000000;
+                }
+                
+                .legend-item.disabled {
+                    opacity: 0.3;
+                }
+                
+                .legend-item.disabled .legend-label {
+                    text-decoration: line-through;
+                }
+
+                .chart-wrapper {
+                    position: relative;
+                    height: 450px;
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                @media (max-width: 768px) {
+                    .charts-container {
+                        gap: 16px;
+                        margin-top: 16px;
+                    }
+                    
+                    .chart-section {
+                        padding: 12px;
+                        margin: 0 2px;
+                        border-radius: 8px;
+                    }
+
+                    .chart-wrapper {
+                        height: 350px;
+                    }
+
+                    .chart-title {
+                        font-size: 1em;
+                    }
+                    
+                    .admin-container {
+                        padding: 16px;
+                    }
+                    
+                    .admin-header {
+                        padding: 24px;
+                        margin-bottom: 20px;
+                    }
+                    
+                    .admin-header h1 {
+                        font-size: 2.2em;
+                    }
+                }
+                
+                @media (max-width: 480px) {
+                    .charts-container {
+                        gap: 12px;
+                        margin-top: 12px;
+                    }
+                    
+                    .chart-section {
+                        padding: 10px;
+                        border-radius: 6px;
+                    }
+                    
+                    .chart-wrapper {
+                        height: 300px;
+                    }
+                    
+                    .admin-header {
+                        padding: 20px;
+                    }
+                    
+                    .admin-header h1 {
+                        font-size: 1.8em;
+                    }
+                    
+                    .admin-container {
+                        padding: 12px;
+                    }
+                }
+            </style>
+        </div>
+    </div>
+    
+    <script>
+        // Safari対応: JavaScript でも強制的にダークテーマを適用
+        document.documentElement.style.background = '#0a0a0a';
+        document.body.style.background = 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%)';
+        document.body.style.color = '#ffffff';
+    </script>
+</body>
+</html>

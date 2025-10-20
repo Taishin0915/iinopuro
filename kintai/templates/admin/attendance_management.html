@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja" style="background: #0a0a0a;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>稼働管理 - Windmill Job App</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}?v=3">
+    <style>
+        /* Safari対応: htmlとbodyに直接ダークテーマを適用 */
+        html {
+            background: #0a0a0a !important;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;
+            color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* 強制的にダークテーマを適用 */
+        body.admin-page {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;
+            min-height: 100vh !important;
+            color: #fff !important;
+        }
+        
+        body.admin-page::before {
+            content: '' !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.05) 0%, transparent 50%) !important;
+            pointer-events: none !important;
+            z-index: -1 !important;
+        }
+        
+        /* ヘッダーを管理者テーマに */
+        .admin-header {
+            background: rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(25px) !important;
+            border: 1px solid rgba(120, 219, 255, 0.2) !important;
+        }
+        
+        .admin-header h1 {
+            color: #78dbff !important;
+            text-shadow: 0 0 30px rgba(120, 219, 255, 0.6) !important;
+        }
+        
+        /* 統計カードを管理者テーマに */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(120, 219, 255, 0.2) !important;
+        }
+        
+        .stat-label {
+            color: #78dbff !important;
+        }
+        
+        .stat-value {
+            color: #78dbff !important;
+            text-shadow: 0 0 25px rgba(120, 219, 255, 0.6) !important;
+        }
+        
+        /* ナビゲーションボタンを管理者テーマに */
+        .nav-button {
+            background: rgba(120, 219, 255, 0.2) !important;
+            border: 1px solid rgba(120, 219, 255, 0.4) !important;
+            color: #78dbff !important;
+        }
+        
+        .nav-button.active,
+        .nav-button:hover {
+            background: rgba(120, 219, 255, 0.3) !important;
+        }
+        
+        /* 日付選択セクション */
+        .date-selector-section {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(120, 219, 255, 0.2) !important;
+        }
+        
+        .date-label {
+            color: #78dbff !important;
+        }
+        
+        .date-input {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(120, 219, 255, 0.3) !important;
+            color: #ffffff !important;
+        }
+        
+        .date-form-button {
+            background: rgba(120, 219, 255, 0.2) !important;
+            border: 1px solid rgba(120, 219, 255, 0.4) !important;
+            color: #78dbff !important;
+        }
+        
+        .selected-date-info {
+            color: #ffffff !important;
+        }
+        
+        /* admin-contentを管理者テーマに */
+        .admin-content {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(120, 219, 255, 0.2) !important;
+        }
+        
+        .admin-content h2 {
+            color: #78dbff !important;
+        }
+        
+        /* 他の管理者画面と統一したダークテーマ */
+        .status-departed {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .status-not-departed {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .departed-user {
+            color: #00ff88 !important;
+            font-weight: 600;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+        }
+        
+        .not-departed-user {
+            color: #ff6b6b !important;
+            font-weight: 600;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .color-legend {
+            display: flex;
+            gap: 50px;
+            margin-bottom: -10px;
+            margin-top: 15px;
+            padding: 8px;
+            background: rgba(120, 219, 255, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(120, 219, 255, 0.2);
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .color-legend p {
+            margin: 0;
+            font-size: 14px;
+            color: #78dbff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        
+        .legend-item {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        /* admin-subtitleスタイルを追加 */
+        .admin-subtitle {
+            color: #78dbff;
+            font-size: 1.1em;
+            font-weight: 300;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body class="admin-page" style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important; color: #ffffff !important;">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>稼働管理</h1>
+            <p class="admin-subtitle">出勤中のユーザーと打刻時刻を確認</p>
+        </div>
+
+        <!-- ナビゲーション -->
+        <div class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="nav-button">ダッシュボード</a>
+            <a href="{% url 'admin_users' %}" class="nav-button">ユーザー管理</a>
+            <a href="{% url 'admin_attendance_management' %}" class="nav-button active">稼働管理</a>
+            <a href="{% url 'admin_carriers' %}" class="nav-button">キャリア管理</a>
+        </div>
+
+        <!-- 日付選択フォーム -->
+        <div class="date-selector-section">
+            <form method="get" class="date-form">
+                <label for="date-input" class="date-label">表示日付:</label>
+                <input type="date" id="date-input" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="date-input">
+                <button type="submit" class="date-form-button">更新</button>
+            </form>
+            <div class="selected-date-info">
+                <strong>{{ selected_date|date:"Y年m月d日" }}の稼働状況</strong>
+                {% if selected_date != today %}
+                    <span class="date-note">（過去のデータ）</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 統計情報 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">出勤中</div>
+                <div class="stat-value">{{ working_count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">総ユーザー数</div>
+                <div class="stat-value">{{ total_count }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">出勤率</div>
+                <div class="stat-value">{{ attendance_rate }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">表示日付</div>
+                <div class="stat-value">{{ selected_date|date:"m/d" }}</div>
+            </div>
+        </div>
+
+        <!-- 出勤中ユーザー一覧 -->
+        <div class="admin-content">
+            <h2>出発/出勤中ユーザー</h2>
+            <div class="color-legend">
+                <p><span class="legend-item departed-user">■</span> 出発済み</p>
+                <p><span class="legend-item not-departed-user">■</span> 未出発</p>
+            </div>
+            {% if working_users %}
+                <div class="attendance-table-container">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>ユーザー</th>
+                                <th>状況</th> <!-- 変更テスト -->
+                                <th>出勤時刻</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in working_users %}
+                            <tr>
+                                <td class="user-name {% if data.departure_record %}departed-user{% else %}not-departed-user{% endif %}">
+                                    {{ data.user.username }}
+                                </td>
+                                <td class="status">
+                                    {% if data.status == 'CLOCKED_IN' %}
+                                        <span class="status-working">出勤中</span>
+                                    {% else %}
+                                        <span class="status-not-working">未出勤</span>
+                                    {% endif %}
+                                </td>
+                                <td class="clock-time">
+                                    {% if data.clock_in_time %}
+                                        {{ data.clock_in_time|date:"H:i:s" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <p>現在出勤中のユーザーはいません</p>
+                </div>
+            {% endif %}
+        </div>
+
+
+        <!-- 全ユーザー一覧 -->
+        <div class="admin-content">
+            <h2>全ユーザー状況</h2>
+            <div class="color-legend">
+                <p><span class="legend-item departed-user">■</span> 出発済み</p>
+                <p><span class="legend-item not-departed-user">■</span> 未出発</p>
+            </div>
+            <div class="attendance-table-container">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>ユーザー</th>
+                            <th>状況</th> <!-- 変更テスト2 -->
+                            <th>出勤時刻</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in all_users %}
+                        <tr class="{% if data.status == 'CLOCKED_IN' %}working-row{% else %}not-working-row{% endif %}">
+                            <td class="user-name {% if data.departure_record %}departed-user{% else %}not-departed-user{% endif %}">
+                                {{ data.user.username }}
+                            </td>
+                            <td class="status">
+                                {% if data.status == 'CLOCKED_IN' %}
+                                    <span class="status-working">出勤中</span>
+                                {% else %}
+                                    <span class="status-not-working">未出勤</span>
+                                {% endif %}
+                            </td>
+                            <td class="clock-time">
+                                {% if data.clock_in_time %}
+                                    {{ data.clock_in_time|date:"H:i:s" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 下部ナビゲーション -->
+        <div class="bottom-navigation">
+            <a href="{% url 'admin_dashboard' %}" class="nav-button">← ダッシュボードに戻る</a>
+        </div>
+    </div>
+    
+    <script>
+        // Safari対応: JavaScript でも強制的にダークテーマを適用
+        document.documentElement.style.background = '#0a0a0a';
+        document.body.style.background = 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%)';
+        document.body.style.color = '#ffffff';
+    </script>
+</body>
+</html>

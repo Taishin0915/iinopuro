@@ -1,0 +1,23 @@
+<svg width="200" height="150" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="200" height="150" fill="#E3F2FD"/>
+  
+  <!-- 中央の円 -->
+  <circle cx="100" cy="75" r="40" fill="#BDBDBD" stroke="#9E9E9E" stroke-width="2"/>
+  
+  <!-- 斜線 -->
+  <line x1="70" y1="45" x2="130" y2="105" stroke="#757575" stroke-width="3"/>
+  
+  <!-- カメラアイコン -->
+  <g transform="translate(85, 60)">
+    <!-- カメラ本体 -->
+    <rect x="0" y="10" width="30" height="20" rx="3" fill="#424242"/>
+    <!-- レンズ -->
+    <circle cx="15" cy="20" r="8" fill="#FFFFFF" stroke="#424242" stroke-width="1"/>
+    <!-- フラッシュ -->
+    <circle cx="25" cy="15" r="2" fill="#FFFFFF"/>
+  </g>
+  
+  <!-- NO IMAGE テキスト -->
+  <text x="100" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#424242">NO IMAGE</text>
+</svg>

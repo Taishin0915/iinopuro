@@ -1,0 +1,518 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja" style="background: #0a0a0a;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}?v=3">
+    <style>
+        /* Safari対応: htmlとbodyに直接ダークテーマを適用 */
+        html {
+            background: #0a0a0a !important;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;
+            color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    </style>
+</head>
+<body class="admin-page" style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%) !important;">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>{{ title }}</h1>
+            <p>キャリア別成績管理と分析</p>
+        </div>
+        
+        <nav class="admin-nav">
+            <a href="{% url 'admin_dashboard' %}" class="nav-button">
+                <span>ダッシュボード</span>
+            </a>
+            <a href="{% url 'admin_users' %}" class="nav-button">
+                <span>ユーザー管理</span>
+            </a>
+            <a href="{% url 'admin_attendance_management' %}" class="nav-button">
+                <span>稼働管理</span>
+            </a>
+            <a href="{% url 'admin_carriers' %}" class="nav-button active">
+                <span>キャリア管理</span>
+            </a>
+        </nav>
+        
+        <div class="admin-content">
+
+            
+            <style>
+                .period-selector {
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border-radius: 16px;
+                    padding: 20px;
+                    margin: 16px 0;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    border: 1px solid rgba(120, 219, 255, 0.2);
+                }
+                
+                .period-info {
+                    text-align: center;
+                    margin-bottom: 16px;
+                }
+                
+                .period-info p {
+                    color: #78dbff !important;
+                    font-size: 14px;
+                    margin: 0;
+                    line-height: 1.5;
+                }
+                
+                .period-duration {
+                    color: #78dbff !important;
+                    font-size: 12px;
+                    opacity: 0.8;
+                }
+                
+                .period-buttons {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 12px;
+                    padding: 0;
+                }
+                
+                .period-btn {
+                    background: rgba(120, 219, 255, 0.2) !important;
+                    color: #78dbff !important;
+                    border: 1px solid rgba(120, 219, 255, 0.4) !important;
+                    border-radius: 8px;
+                    padding: 12px 20px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+                
+                .period-btn:hover {
+                    background: rgba(120, 219, 255, 0.3) !important;
+                    transform: translateY(-1px);
+                    box-shadow: 0 5px 15px rgba(120, 219, 255, 0.2);
+                }
+                
+                .period-btn.active {
+                    background: rgba(120, 219, 255, 0.3) !important;
+                    box-shadow: 0 5px 15px rgba(120, 219, 255, 0.3);
+                }
+                
+                @media (min-width: 768px) {
+                    .period-selector {
+                        padding: 24px;
+                        margin: 24px 0;
+                        background: rgba(255, 255, 255, 0.08) !important;
+                    }
+                    
+                    .period-info p {
+                        font-size: 16px;
+                        color: #78dbff !important;
+                    }
+                    
+                    .period-duration {
+                        font-size: 14px;
+                        color: #78dbff !important;
+                    }
+                    
+                    .period-buttons {
+                        gap: 16px;
+                        max-width: 600px;
+                        margin: 0 auto;
+                    }
+                    
+                    .period-btn {
+                        padding: 16px 24px;
+                        font-size: 16px;
+                        background: rgba(120, 219, 255, 0.2) !important;
+                        color: #78dbff !important;
+                        border: 1px solid rgba(120, 219, 255, 0.4) !important;
+                    }
+                }
+            </style>
+            
+            {% if carrier_stats %}
+            <div class="carrier-grid">
+                {% for carrier, stats in carrier_stats.items %}
+                <a href="{% url 'admin_carrier_detail' carrier.id %}" class="carrier-button">
+                    <div class="carrier-icon">{{ carrier.carrier_name|slice:":1" }}</div>
+                    <div class="carrier-name">{{ carrier.carrier_name }}</div>
+                    <div class="carrier-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">生産性</span>
+                            <span class="stat-value">{{ stats.productivity }}</span>
+                            <span class="stat-unit">件/日</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-data">
+                <p>キャリアデータがありません。</p>
+            </div>
+            {% endif %}
+
+            <style>
+                .carrier-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                    gap: 24px;
+                    margin-top: 24px;
+                }
+
+                .carrier-button {
+                    background: rgba(120, 219, 255, 0.1);
+                    border-radius: 16px;
+                    padding: 24px;
+                    border: 1px solid rgba(120, 219, 255, 0.2);
+                    backdrop-filter: blur(20px);
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3),
+                                0 0 0 1px rgba(255, 255, 255, 0.05),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                    transition: all 0.3s ease;
+                    text-decoration: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 16px;
+                }
+
+                .carrier-button:hover {
+                    background: rgba(120, 219, 255, 0.15);
+                    transform: translateY(-3px);
+                    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4),
+                                0 0 0 1px rgba(120, 219, 255, 0.3),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+                }
+
+                .carrier-icon {
+                    width: 64px;
+                    height: 64px;
+                    background: rgba(120, 219, 255, 0.2);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 24px;
+                    color: #78dbff;
+                    font-weight: 300;
+                    text-shadow: 0 0 20px rgba(120, 219, 255, 0.5);
+                    border: 1px solid rgba(120, 219, 255, 0.3);
+                }
+
+                .carrier-name {
+                    color: #78dbff;
+                    font-size: 1.2em;
+                    font-weight: 300;
+                    text-align: center;
+                    letter-spacing: 0.5px;
+                    text-shadow: 0 0 15px rgba(120, 219, 255, 0.4);
+                }
+
+                .carrier-stats {
+                    width: 100%;
+                }
+
+                .stat-item {
+                    background: rgba(120, 219, 255, 0.1);
+                    border-radius: 12px;
+                    padding: 12px;
+                    text-align: center;
+                    border: 1px solid rgba(120, 219, 255, 0.2);
+                }
+
+                .stat-label {
+                    display: block;
+                    color: #78dbff;
+                    font-size: 0.85em;
+                    margin-bottom: 4px;
+                    font-weight: 400;
+                    letter-spacing: 0.5px;
+                    opacity: 0.8;
+                }
+
+                .stat-value {
+                    display: inline-block;
+                    color: #78dbff;
+                    font-size: 1.5em;
+                    font-weight: 300;
+                    text-shadow: 0 0 15px rgba(120, 219, 255, 0.4);
+                    margin-right: 2px;
+                }
+
+                .stat-unit {
+                    display: inline-block;
+                    color: #78dbff;
+                    font-size: 0.9em;
+                    font-weight: 300;
+                    opacity: 0.8;
+                    vertical-align: baseline;
+                }
+
+                @media (min-width: 768px) {
+                    .carrier-grid {
+                        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    }
+
+                    .carrier-button {
+                        padding: 32px;
+                    }
+
+                    .carrier-icon {
+                        width: 80px;
+                        height: 80px;
+                        font-size: 32px;
+                    }
+
+                    .carrier-name {
+                        font-size: 1.4em;
+                    }
+
+                    .stat-label {
+                        font-size: 0.9em;
+                    }
+
+                    .stat-value {
+                        font-size: 1.5em;
+                    }
+                }
+            </style>
+            
+            <style>
+                .carrier-grid {
+                    display: grid;
+                    gap: 24px;
+                    margin-top: 24px;
+                }
+                
+                .carrier-card {
+                    background: rgba(120, 219, 255, 0.1);
+                    border-radius: 16px;
+                    padding: 25px;
+                    border: 1px solid rgba(120, 219, 255, 0.2);
+                    backdrop-filter: blur(20px);
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3),
+                                0 0 0 1px rgba(255, 255, 255, 0.05),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                    transition: all 0.3s ease;
+                }
+                
+                .carrier-card:hover {
+                    background: rgba(120, 219, 255, 0.15);
+                    transform: translateY(-3px);
+                    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4),
+                                0 0 0 1px rgba(120, 219, 255, 0.3),
+                                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+                }
+                
+                .carrier-header {
+                    margin-bottom: 20px;
+                    text-align: center;
+                }
+                
+                .carrier-header h3 {
+                    color: #78dbff;
+                    font-size: 1.5em;
+                    font-weight: 300;
+                    margin: 0;
+                    text-shadow: 0 0 20px rgba(120, 219, 255, 0.5);
+                    letter-spacing: 0.5px;
+                }
+                
+                .carrier-summary {
+                    margin-bottom: 24px;
+                }
+                
+                .summary-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 16px;
+                }
+                
+                .summary-item {
+                    background: rgba(120, 219, 255, 0.1);
+                    border-radius: 12px;
+                    padding: 16px;
+                    text-align: center;
+                    border: 1px solid rgba(120, 219, 255, 0.2);
+                    backdrop-filter: blur(15px);
+                }
+                
+                .summary-label {
+                    color: #78dbff;
+                    font-size: 0.85em;
+                    margin-bottom: 4px;
+                    font-weight: 400;
+                    letter-spacing: 0.5px;
+                }
+                
+                .summary-value {
+                    color: #78dbff;
+                    font-size: 1.3em;
+                    font-weight: 300;
+                    text-shadow: 0 0 15px rgba(120, 219, 255, 0.4);
+                }
+                
+                .monthly-details {
+                    margin-top: 24px;
+                }
+                
+                .monthly-details h4 {
+                    color: #78dbff;
+                    font-size: 1.1em;
+                    font-weight: 400;
+                    margin: 0 0 16px 0;
+                    text-align: center;
+                    letter-spacing: 0.5px;
+                }
+                
+                .monthly-stats {
+                    display: grid;
+                    gap: 16px;
+                }
+                
+                .monthly-card {
+                    background: rgba(120, 219, 255, 0.1);
+                    border-radius: 12px;
+                    padding: 16px;
+                    border: 1px solid rgba(120, 219, 255, 0.2);
+                    backdrop-filter: blur(15px);
+                }
+                
+                .monthly-header {
+                    color: #78dbff;
+                    font-size: 1em;
+                    font-weight: 400;
+                    margin-bottom: 12px;
+                    text-align: center;
+                    letter-spacing: 0.5px;
+                }
+                
+                .monthly-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 12px;
+                }
+                
+                .monthly-item {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                }
+                
+                .monthly-label {
+                    color: #78dbff;
+                    font-size: 0.85em;
+                    margin-bottom: 2px;
+                    font-weight: 400;
+                    letter-spacing: 0.5px;
+                    opacity: 0.8;
+                }
+                
+                .monthly-value {
+                    color: #78dbff;
+                    font-size: 1em;
+                    font-weight: 300;
+                    text-shadow: 0 0 15px rgba(120, 219, 255, 0.4);
+                }
+                
+                .no-data {
+                    text-align: center;
+                    padding: 24px;
+                    color: #78dbff;
+                    font-size: 1em;
+                    opacity: 0.7;
+                }
+                
+                @media (min-width: 768px) {
+                    .carrier-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+                    
+                    .summary-grid {
+                        grid-template-columns: repeat(3, 1fr);
+                    }
+                    
+                    .monthly-grid {
+                        grid-template-columns: repeat(3, 1fr);
+                    }
+                    
+                    .carrier-header h3 {
+                        font-size: 1.8em;
+                    }
+                    
+                    .summary-label {
+                        font-size: 0.9em;
+                    }
+                    
+                    .summary-value {
+                        font-size: 1.5em;
+                    }
+                    
+                    .monthly-header {
+                        font-size: 1.1em;
+                    }
+                    
+                    .monthly-label {
+                        font-size: 0.9em;
+                    }
+                    
+                    .monthly-value {
+                        font-size: 1.2em;
+                    }
+                }
+            </style>
+        </div>
+        
+        <!-- MyPageに戻るボタン（下部） -->
+        <div class="bottom-navigation">
+            <a href="{% url 'kintai_top' %}" class="nav-button">← MyPageに戻る</a>
+        </div>
+    </div>
+    
+    <script>
+        // Safari対応: JavaScript でも強制的にダークテーマを適用
+        document.documentElement.style.background = '#0a0a0a';
+        document.body.style.background = 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 75%, #0a0a0a 100%)';
+        document.body.style.color = '#ffffff';
+        
+        // 期間選択ボタンのイベントリスナー
+        document.addEventListener('DOMContentLoaded', function() {
+            const periodButtons = document.querySelectorAll('.period-btn');
+            const currentMonths = {{ months_back|default:6 }};
+            
+            // 現在の期間ボタンをハイライト
+            periodButtons.forEach(btn => {
+                if (parseInt(btn.dataset.months) === currentMonths) {
+                    btn.style.background = 'rgba(120, 219, 255, 0.3)';
+                    btn.style.border = '1px solid rgba(120, 219, 255, 0.4)';
+                    btn.style.color = '#78dbff';
+                    btn.style.boxShadow = '0 5px 15px rgba(120, 219, 255, 0.3)';
+                    btn.style.transform = 'translateY(0)';
+                } else {
+                    btn.style.background = 'rgba(120, 219, 255, 0.2)';
+                    btn.style.border = '1px solid rgba(120, 219, 255, 0.4)';
+                    btn.style.color = '#78dbff';
+                }
+            });
+            
+            // ボタンクリックイベント
+            periodButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const months = this.dataset.months;
+                    const url = new URL(window.location);
+                    url.searchParams.set('months', months);
+                    window.location.href = url.toString();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

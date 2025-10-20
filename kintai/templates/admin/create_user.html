@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規ユーザー作成</title>
+    <link rel="stylesheet" href="{% static 'kintai/style.css' %}">
+    <style>
+        .create-user-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .create-user-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .create-user-header h1 {
+            color: #3b82f6;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .create-user-header p {
+            color: #3b82f6;
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .create-user-card {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .user-form {
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #3b82f6;
+            font-size: 1em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #3b82f6;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(59, 130, 246, 0.6);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #3b82f6;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .alerts {
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            border: 1px solid;
+        }
+        
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .back-button {
+            display: inline-block;
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 1em;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            color: #2563eb;
+            transform: translateX(-5px);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .button-group .btn {
+            flex: 1;
+            margin-top: 0;
+        }
+        
+        .delete-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .create-user-container {
+                padding: 15px;
+            }
+            
+            .create-user-card {
+                padding: 20px;
+            }
+            
+            .create-user-header h1 {
+                font-size: 1.8em;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body class="admin-page">
+    <div class="create-user-container">
+        <a href="{% url 'admin_users' %}" class="back-button">← ユーザー管理に戻る</a>
+        
+        <div class="create-user-header">
+            <h1>新規ユーザー作成</h1>
+            <p>新しいユーザーアカウントを作成します</p>
+        </div>
+        
+        <div class="create-user-card">
+            <!-- メッセージ表示 -->
+            {% if messages %}
+            <div class="alerts">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}ℹ️{% endif %}
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" class="user-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username" class="form-label">ユーザー名</label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="ユーザー名を入力" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password1" class="form-label">パスワード</label>
+                    <input type="password" id="password1" name="password1" class="form-input" placeholder="パスワードを入力" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password2" class="form-label">パスワード（確認）</label>
+                    <input type="password" id="password2" name="password2" class="form-input" placeholder="パスワードを再入力" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="is_staff" class="form-label">管理者権限</label>
+                    <select id="is_staff" name="is_staff" class="form-select">
+                        <option value="False">一般ユーザー</option>
+                        <option value="True">管理者</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">ユーザーを作成</button>
+                    <a href="{% url 'admin_users' %}" class="btn btn-secondary">キャンセル</a>
+                </div>
+                
+                <div class="delete-section">
+                    <a href="{% url 'admin_delete_user' %}" class="btn btn-danger">ユーザー消去はこちらから</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,643 @@
+// kintai/static/kintai/script.js
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Script loaded successfully');
+    
+    // 期間選択ボタンのフォントサイズを強制的に設定
+    const periodButtons = document.querySelectorAll('.period-btn[data-months]');
+    console.log('Found period buttons:', periodButtons.length);
+    
+    // ボタンコンテナのグリッドレイアウトを強制設定
+    const periodButtonsContainer = document.querySelector('.period-buttons');
+    if (periodButtonsContainer) {
+        console.log('Setting grid layout for period buttons container');
+        periodButtonsContainer.style.cssText = `
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+            max-width: 360px !important;
+            margin: 0 auto !important;
+            justify-content: center !important;
+            align-items: center !important;
+        `;
+    }
+
+    // 期間ボタンのアクティブ状態管理
+    const currentUrl = window.location.href;
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentMonths = urlParams.get('months') || '3'; // デフォルトは3ヶ月
+
+    periodButtons.forEach((button, index) => {
+        console.log(`Setting font size and height for button ${index}:`, button.textContent);
+        
+        const buttonMonths = button.getAttribute('data-months');
+        const isActive = buttonMonths === currentMonths;
+        
+        // インラインスタイルで直接設定（最強の方法）
+        button.style.cssText = `
+            font-size: 0.9em !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            max-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 8px 16px !important;
+            line-height: 1.0 !important;
+            box-sizing: border-box !important;
+            width: 170px !important;
+            margin: 1px !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            font-weight: 500 !important;
+            background: ${isActive ? '#2563eb' : '#ffffff'} !important;
+            border: 1px solid ${isActive ? '#2563eb' : '#d1d5db'} !important;
+            color: ${isActive ? '#ffffff' : '#374151'} !important;
+            box-shadow: ${isActive ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none'} !important;
+            transform: ${isActive ? 'translateY(-1px)' : 'none'} !important;
+        `;
+        
+        // アクティブクラスの追加/削除
+        if (isActive) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
+    });
+    
+            // ハンバーガーメニューとサイドバーの機能
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebarCloseButton = document.getElementById('sidebarCloseButton');
+
+            console.log('Elements found:', { hamburgerMenu, sidebar, sidebarOverlay, sidebarCloseButton });
+
+            if (hamburgerMenu && sidebar && sidebarOverlay) {
+                console.log('All elements found, setting up event listeners');
+
+                // サイドバーを閉じる関数
+                const closeSidebar = () => {
+                    console.log('Closing sidebar');
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('active');
+                    hamburgerMenu.classList.remove('active');
+                };
+
+                // ハンバーガーメニューをクリックした時の処理
+                hamburgerMenu.addEventListener('click', () => {
+                    console.log('Hamburger menu clicked');
+                    console.log('Sidebar classes before:', sidebar.className);
+                    sidebar.classList.toggle('open');
+                    sidebarOverlay.classList.toggle('active');
+                    hamburgerMenu.classList.toggle('active');
+                    console.log('Sidebar classes after:', sidebar.className);
+                    console.log('Sidebar computed style:', window.getComputedStyle(sidebar).right);
+                });
+
+                // サイドバーの閉じるボタンをクリックした時の処理
+                if (sidebarCloseButton) {
+                    sidebarCloseButton.addEventListener('click', () => {
+                        console.log('Sidebar close button clicked');
+                        closeSidebar();
+                    });
+                }
+
+                // オーバーレイをクリックした時の処理（サイドバーを閉じる）
+                sidebarOverlay.addEventListener('click', () => {
+                    console.log('Overlay clicked');
+                    closeSidebar();
+                });
+
+                // ESCキーでサイドバーを閉じる
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && sidebar.classList.contains('open')) {
+                        console.log('ESC key pressed');
+                        closeSidebar();
+                    }
+                });
+            } else {
+                console.error('Some elements not found:', { hamburgerMenu, sidebar, sidebarOverlay, sidebarCloseButton });
+            }
+
+    const photoInput = document.getElementById('photo-upload-input');
+    const previewImage = document.getElementById('preview-image');
+    const cameraButton = document.getElementById('camera-button');
+    const androidGuide = document.getElementById('android-camera-guide');
+    
+    // Androidデバイスの場合、指示メッセージを表示
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (isAndroid && androidGuide) {
+        androidGuide.style.display = 'block';
+        console.log('Android向け指示メッセージを表示しました');
+    }
+    
+    // ファイル選択に関連する不要な要素を削除 - テスト中: コメントアウト
+    /*
+    const removeFileSelectionElements = () => {
+        // ファイル選択ボタンを探して削除
+        const fileButtons = document.querySelectorAll('button:contains("ファイル選択"), input[type="file"]:not(#photo-upload-input)');
+        fileButtons.forEach(btn => {
+            if (btn.id !== 'photo-upload-input') {
+                btn.style.display = 'none';
+                btn.remove();
+            }
+        });
+        
+        // "選択されていません"テキストを削除
+        const noSelectionTexts = document.querySelectorAll('*');
+        noSelectionTexts.forEach(element => {
+            if (element.textContent && element.textContent.includes('選択されていません')) {
+                element.style.display = 'none';
+                element.remove();
+            }
+        });
+        
+        // ファイル選択に関連するラベルを削除
+        const fileLabels = document.querySelectorAll('label:not([for="photo-upload-input"])');
+        fileLabels.forEach(label => {
+            if (label.textContent && label.textContent.includes('ファイル選択')) {
+                label.style.display = 'none';
+                label.remove();
+            }
+        });
+    };
+    
+    // ページ読み込み時に不要な要素を削除
+    removeFileSelectionElements();
+    
+    // 少し遅延して再度実行（Djangoが動的に要素を追加する場合に対応）
+    setTimeout(removeFileSelectionElements, 100);
+    */
+    
+    // カメラボタンがクリックされた時の処理
+    if (cameraButton && photoInput) {
+        cameraButton.addEventListener('click', () => {
+            console.log('カメラボタンがクリックされました');
+            
+            // デバイス判定
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            console.log('デバイス判定 - Android:', isAndroid);
+            
+            // Androidの場合、より確実にカメラのみを起動するための設定
+            if (isAndroid) {
+                // Android向けの最適化された設定
+                photoInput.setAttribute('accept', 'image/*');
+                photoInput.setAttribute('capture', 'camera');
+                
+                // 一時的にmultiple属性を削除（ファイル選択を制限）
+                photoInput.removeAttribute('multiple');
+                
+                console.log('Android向けの設定を適用しました');
+                
+                // Android向けの追加指示を表示
+                showAndroidCameraInstructions();
+            } else {
+                // iPhone/Safari向けの設定
+                photoInput.setAttribute('accept', 'image/*');
+                photoInput.setAttribute('capture', 'environment');
+                console.log('iPhone/Safari向けの設定を適用しました');
+            }
+            
+            // ファイル入力をクリックしてカメラを起動
+            photoInput.click();
+            console.log('ファイル入力をクリックしました');
+            
+            // Android向けのタイムアウト処理
+            if (isAndroid) {
+                setupAndroidCameraTimeout();
+            }
+        });
+    }
+    
+    // 撮影完了時の処理（画像圧縮機能付き）
+    if (photoInput) {
+        photoInput.addEventListener('change', (event) => {
+            console.log('=== 写真処理開始 ===');
+            console.log('イベントタイプ:', event.type);
+            console.log('ファイル数:', event.target.files.length);
+            
+            const file = event.target.files[0];
+
+            if (file) {
+                console.log('ファイル情報:');
+                console.log('- 名前:', file.name);
+                console.log('- サイズ:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
+                console.log('- タイプ:', file.type);
+                console.log('- 最終更新:', new Date(file.lastModified));
+                
+                // デバイス判定
+                const isAndroid = /Android/i.test(navigator.userAgent);
+                console.log('- デバイス: Android =', isAndroid);
+                
+                // Android向けの特別な処理
+                if (isAndroid) {
+                    console.log('Android向けの特別処理を実行');
+                    
+                    // Androidの場合、まずプレビューを直接表示してから圧縮
+                    const directReader = new FileReader();
+                    directReader.onload = (e) => {
+                        if (previewImage) {
+                            previewImage.src = e.target.result;
+                            previewImage.style.width = '200px';
+                            previewImage.style.height = '150px';
+                            previewImage.style.objectFit = 'cover';
+                            console.log('✅ Android: 直接プレビュー表示完了');
+                        }
+                    };
+                    directReader.readAsDataURL(file);
+                    
+                    // 少し遅延してから圧縮処理を実行
+                    setTimeout(() => {
+                        console.log('Android: 遅延圧縮処理開始');
+                        compressImageForAndroid(file, photoInput);
+                    }, 500);
+                } else {
+                    // iPhone/Safari向けの通常処理
+                    console.log('iPhone/Safari向けの通常処理');
+                    compressImage(file, 800, 0.5, (compressedBlob) => {
+                        if (!compressedBlob) {
+                            console.error('画像圧縮に失敗しました');
+                            return;
+                        }
+                        
+                        console.log('圧縮完了:');
+                        console.log('- 圧縮後サイズ:', (compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB');
+                        console.log('- 圧縮後タイプ:', compressedBlob.type);
+                        
+                        // 圧縮した画像でFileオブジェクトを置き換え
+                        const compressedFile = new File([compressedBlob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        
+                        console.log('圧縮ファイル作成完了:', compressedFile.name);
+                        
+                        // DataTransferを使ってinput.filesを更新
+                        try {
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(compressedFile);
+                            photoInput.files = dataTransfer.files;
+                            console.log('input.files更新完了');
+                        } catch (error) {
+                            console.error('input.files更新エラー:', error);
+                        }
+                        
+                        // プレビュー表示
+                        console.log('プレビュー表示開始...');
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            if (previewImage) {
+                                previewImage.src = e.target.result;
+                                previewImage.style.width = '200px';
+                                previewImage.style.height = '150px';
+                                previewImage.style.objectFit = 'cover';
+                                console.log('✅ プレビュー表示完了');
+                            } else {
+                                console.error('プレビュー画像要素が見つかりません');
+                            }
+                        };
+                        reader.onerror = (error) => {
+                            console.error('FileReader エラー:', error);
+                        };
+                        reader.readAsDataURL(compressedBlob);
+                    });
+                }
+            } else {
+                console.log('ファイルが選択されていません');
+            }
+        });
+    }
+    
+    // 画像圧縮関数
+    function compressImage(file, maxWidth, quality, callback) {
+        console.log('compressImage開始:', {
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            maxWidth: maxWidth,
+            quality: quality
+        });
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            console.log('FileReader読み込み完了');
+            const img = new Image();
+            img.onload = () => {
+                console.log('画像読み込み完了:', {
+                    originalWidth: img.width,
+                    originalHeight: img.height
+                });
+                
+                // キャンバスを作成
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                // 最大幅を超える場合はリサイズ
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                    console.log('リサイズ実行:', { newWidth: width, newHeight: height });
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // キャンバスに画像を描画
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('Canvas context取得に失敗');
+                    callback(null);
+                    return;
+                }
+                
+                console.log('キャンバスに描画中...');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // JPEGに変換して圧縮
+                console.log('JPEG変換開始...');
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        console.log('✅ 圧縮成功:', {
+                            compressedSize: blob.size,
+                            compressedType: blob.type
+                        });
+                        callback(blob);
+                    } else {
+                        console.error('❌ Blob生成に失敗');
+                        callback(null);
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = (error) => {
+                console.error('画像読み込みエラー:', error);
+                callback(null);
+            };
+            img.src = e.target.result;
+        };
+        reader.onerror = (error) => {
+            console.error('FileReader エラー:', error);
+            callback(null);
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // Android向けのカメラ指示表示関数
+    function showAndroidCameraInstructions() {
+        // 既存のモーダルがあれば削除
+        const existingModal = document.getElementById('android-camera-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // モーダル要素を作成
+        const modal = document.createElement('div');
+        modal.id = 'android-camera-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        `;
+        
+        modalContent.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 16px;">📷</div>
+            <h3 style="margin: 0 0 16px 0; color: #333; font-size: 18px;">カメラアプリでの操作</h3>
+            <p style="margin: 0 0 20px 0; color: #666; line-height: 1.5; font-size: 14px;">
+                写真を撮影した後、必ず<br>
+                <strong style="color: #2196f3;">「✓」ボタンまたは「OK」ボタン</strong><br>
+                を押して写真を確定してください
+            </p>
+            <button id="android-modal-close" style="
+                background: #2196f3;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 12px 24px;
+                font-size: 14px;
+                cursor: pointer;
+                font-weight: 500;
+            ">理解しました</button>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // 閉じるボタンのイベント
+        document.getElementById('android-modal-close').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // モーダル外クリックで閉じる
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        // 10秒後に自動で閉じる
+        setTimeout(() => {
+            if (document.getElementById('android-camera-modal')) {
+                modal.remove();
+            }
+        }, 10000);
+        
+        console.log('Android向けカメラ指示モーダルを表示しました');
+    }
+    
+    // Android向けのカメラタイムアウト処理
+    function setupAndroidCameraTimeout() {
+        let timeoutId;
+        let hasFileSelected = false;
+        
+        // ファイル選択を監視
+        const checkFileSelection = () => {
+            if (photoInput.files && photoInput.files.length > 0) {
+                hasFileSelected = true;
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                console.log('Android: ファイル選択を確認しました');
+            }
+        };
+        
+        // 30秒後にタイムアウト処理
+        timeoutId = setTimeout(() => {
+            if (!hasFileSelected) {
+                console.log('Android: カメラタイムアウト - 指示メッセージを表示');
+                showAndroidTimeoutMessage();
+            }
+        }, 30000);
+        
+        // ファイル選択の監視を開始
+        const intervalId = setInterval(() => {
+            checkFileSelection();
+            if (hasFileSelected) {
+                clearInterval(intervalId);
+            }
+        }, 1000);
+        
+        // 60秒後に監視を停止
+        setTimeout(() => {
+            clearInterval(intervalId);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        }, 60000);
+    }
+    
+    // Android向けのタイムアウトメッセージ表示
+    function showAndroidTimeoutMessage() {
+        const modal = document.createElement('div');
+        modal.id = 'android-timeout-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        `;
+        
+        modalContent.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 16px;">⏰</div>
+            <h3 style="margin: 0 0 16px 0; color: #333; font-size: 18px;">写真の確定をお忘れではありませんか？</h3>
+            <p style="margin: 0 0 20px 0; color: #666; line-height: 1.5; font-size: 14px;">
+                カメラアプリで写真を撮影した後、<br>
+                <strong style="color: #f44336;">「✓」ボタンまたは「OK」ボタン</strong><br>
+                を押して写真を確定してください
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="android-timeout-retry" style="
+                    background: #2196f3;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 12px 16px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">再撮影</button>
+                <button id="android-timeout-close" style="
+                    background: #666;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 12px 16px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">閉じる</button>
+            </div>
+        `;
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // 再撮影ボタン
+        document.getElementById('android-timeout-retry').addEventListener('click', () => {
+            modal.remove();
+            if (cameraButton) {
+                cameraButton.click();
+            }
+        });
+        
+        // 閉じるボタン
+        document.getElementById('android-timeout-close').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // モーダル外クリックで閉じる
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+    
+    // Android専用の画像圧縮関数
+    function compressImageForAndroid(file, photoInput) {
+        console.log('Android専用圧縮処理開始');
+        
+        // Androidでは軽い圧縮設定を使用
+        compressImage(file, 1200, 0.7, (compressedBlob) => {
+            if (!compressedBlob) {
+                console.error('Android: 圧縮に失敗、元ファイルを使用');
+                // 圧縮に失敗した場合は元ファイルをそのまま使用
+                try {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    photoInput.files = dataTransfer.files;
+                    console.log('Android: 元ファイルで input.files 更新完了');
+                } catch (error) {
+                    console.error('Android: 元ファイル設定エラー:', error);
+                }
+                return;
+            }
+            
+            console.log('Android: 圧縮成功');
+            console.log('- 圧縮後サイズ:', (compressedBlob.size / 1024 / 1024).toFixed(2) + 'MB');
+            
+            // 圧縮した画像でFileオブジェクトを作成
+            const compressedFile = new File([compressedBlob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+            
+            // DataTransferを使ってinput.filesを更新
+            try {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(compressedFile);
+                photoInput.files = dataTransfer.files;
+                console.log('Android: 圧縮ファイルで input.files 更新完了');
+            } catch (error) {
+                console.error('Android: 圧縮ファイル設定エラー:', error);
+                // エラーの場合は元ファイルを使用
+                try {
+                    const fallbackDataTransfer = new DataTransfer();
+                    fallbackDataTransfer.items.add(file);
+                    photoInput.files = fallbackDataTransfer.files;
+                    console.log('Android: フォールバックで元ファイル使用');
+                } catch (fallbackError) {
+                    console.error('Android: フォールバックも失敗:', fallbackError);
+                }
+            }
+        });
+    }
+});
