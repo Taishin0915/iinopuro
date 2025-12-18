@@ -42,13 +42,21 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.resulta.jp',
 ]
 
-# Cookie関連（HTTPSサイトではSecure設定が必要）
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-
-# Cookie SameSiteを緩めてスマホ対応（iOS Safariで必須）
-CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SAMESITE = 'None'
+# Cookie関連（環境ごとに設定）
+# 本番環境ではHTTPSを使用するためSecureを有効にする
+# 開発環境ではHTTPを使用するためSecureを無効にする
+import os
+if os.environ.get('DJANGO_ENV') == 'production':
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SAMESITE = 'None'
+else:
+    # 開発環境
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
 # Application definition
 

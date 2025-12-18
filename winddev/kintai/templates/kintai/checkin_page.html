@@ -65,6 +65,25 @@
             <p>{{ user.username }}さん、入店報告をしてください。</p>
         </div>
 
+        <!-- メッセージ表示 -->
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {% if message.tags == 'error' %}
+                            ❌ {{ message }}
+                        {% elif message.tags == 'success' %}
+                            ✅ {{ message }}
+                        {% elif message.tags == 'warning' %}
+                            ⚠️ {{ message }}
+                        {% else %}
+                            ℹ️ {{ message }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <!-- エラーメッセージ表示 -->
         {% if error_message %}
             <div class="error-message">

@@ -2,6 +2,8 @@ from django import forms
 from core.models import ReportImage
 from core.models import Carrier,Report
 from kintai.models import Timestamp# ◀ Carrierを追加
+from PIL import Image
+import os
 
 class ReportImageForm(forms.ModelForm):
     """
@@ -18,6 +20,47 @@ class ReportImageForm(forms.ModelForm):
                 # 'style': 'display: none !important; visibility: hidden !important;'  # テスト中: コメントアウト
             })
         }
+    
+    def clean_upload_img(self):
+        """
+        画像ファイルのバリデーション
+        - ファイルタイプの検証
+        - ファイルサイズの検証
+        - MIMEタイプの検証
+        """
+        img = self.cleaned_data.get('upload_img')
+        
+        if not img:
+            raise forms.ValidationError('画像ファイルを選択してください。')
+        
+        # ファイルサイズの検証（最大10MB）
+        max_size = 10 * 1024 * 1024  # 10MB
+        if img.size > max_size:
+            raise forms.ValidationError(f'画像ファイルのサイズは10MB以下にしてください。現在: {img.size / 1024 / 1024:.2f}MB')
+        
+        # 許可されたファイル拡張子
+        allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+        file_name = img.name.lower()
+        
+        # 拡張子の検証
+        if not any(file_name.endswith(ext) for ext in allowed_extensions):
+            raise forms.ValidationError(f'画像ファイルのみアップロードできます。対応形式: {", ".join(allowed_extensions)}')
+        
+        # MIMEタイプの検証
+        allowed_mime_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+        if img.content_type not in allowed_mime_types:
+            raise forms.ValidationError('画像ファイルのみアップロードできます。')
+        
+        # PILを使用して実際に画像ファイルかどうかを検証
+        try:
+            img.seek(0)
+            with Image.open(img) as im:
+                im.verify()
+            img.seek(0)
+        except Exception:
+            raise forms.ValidationError('不正な画像ファイルです。')
+        
+        return img
 
 
 

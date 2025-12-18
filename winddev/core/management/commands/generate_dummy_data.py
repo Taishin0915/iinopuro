@@ -46,15 +46,20 @@ class Command(BaseCommand):
     def create_users(self, num_users):
         """ダミーユーザーを作成"""
         users = []
+        # 既存のユーザー数を確認
+        existing_count = User.objects.count()
+        start_index = existing_count + 1
+        
         for i in range(num_users):
-            username = f'dummy_user_{i+1}'
-            email = f'dummy{i+1}@example.com'
+            user_index = start_index + i
+            username = f'dummy_user_{user_index}'
+            email = f'dummy{user_index}@example.com'
             
             user, created = User.objects.get_or_create(
                 username=username,
                 defaults={
                     'email': email,
-                    'first_name': f'User{i+1}',
+                    'first_name': f'User{user_index}',
                     'last_name': 'Dummy',
                     'is_active': True
                 }
@@ -62,19 +67,22 @@ class Command(BaseCommand):
             if created:
                 user.set_password('password123')
                 user.save()
-            users.append(user)
+                users.append(user)
+            else:
+                # 既存のユーザーの場合もリストに追加（データ生成のため）
+                users.append(user)
             
-        self.stdout.write(f'Created {len(users)} users')
+        self.stdout.write(f'Created/Found {len(users)} users')
         return users
 
     def create_carriers(self, num_carriers):
         """ダミーキャリアを作成"""
         carriers = []
-        carrier_names = ['SoftBank', 'NTT Docomo', 'KDDI', 'Rakuten Mobile', 'Y!mobile']
+        carrier_names = ['softbank', 'au', 'docomo']
         
-        for i in range(min(num_carriers, len(carrier_names))):
+        for carrier_name in carrier_names:
             carrier, created = Carrier.objects.get_or_create(
-                carrier_name=carrier_names[i]
+                carrier_name=carrier_name
             )
             carriers.append(carrier)
             

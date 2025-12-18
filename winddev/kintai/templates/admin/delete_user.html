@@ -266,11 +266,31 @@
                 </div>
                 
                 <div class="button-group">
-                    <button type="submit" class="btn btn-danger">ユーザーを削除</button>
+                    <button type="submit" class="btn btn-danger" onclick="return confirmDeletion()">ユーザーを削除</button>
                     <a href="{% url 'admin_create_user' %}" class="btn btn-secondary">キャンセル</a>
                 </div>
             </form>
         </div>
     </div>
+    
+    <script>
+        function confirmDeletion() {
+            const userIdSelect = document.getElementById('user_id');
+            const selectedUser = userIdSelect.options[userIdSelect.selectedIndex].text;
+            
+            if (!selectedUser || selectedUser === 'ユーザーを選択してください') {
+                alert('削除するユーザーを選択してください。');
+                return false;
+            }
+            
+            const confirmMessage = `本当に「${selectedUser}」を削除してもよろしいですか？\n\nこの操作は取り消せません。`;
+            
+            if (confirm(confirmMessage)) {
+                return true;
+            }
+            
+            return false;
+        }
+    </script>
 </body>
 </html>

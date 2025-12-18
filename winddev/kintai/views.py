@@ -28,48 +28,32 @@ def login_view(request):
     
     # ログイン処理
     if request.method == 'POST':
-        print(f"DEBUG: POST received - {request.POST}")  # デバッグ
-        print(f"DEBUG: User-Agent: {request.META.get('HTTP_USER_AGENT', 'Unknown')}")  # デバッグ
-        print(f"DEBUG: Remote IP: {request.META.get('REMOTE_ADDR', 'Unknown')}")  # デバッグ
-        
         login_form = AuthenticationForm(request, data=request.POST)
-        print(f"DEBUG: Form valid - {login_form.is_valid()}")  # デバッグ
         
         if login_form.is_valid():
             username = login_form.cleaned_data.get('username')
             password = login_form.cleaned_data.get('password')
-            print(f"DEBUG: Authenticating user: {username}")  # デバッグ
-            print(f"DEBUG: Password length: {len(password) if password else 0}")  # デバッグ
             
             # ユーザーが存在するかチェック
             from django.contrib.auth import get_user_model
             User = get_user_model()
             user_exists = User.objects.filter(username=username).exists()
-            print(f"DEBUG: User exists in database: {user_exists}")  # デバッグ
             
             user = authenticate(request, username=username, password=password)
-            print(f"DEBUG: User authenticated: {user is not None}")  # デバッグ
             
             if user is not None:
-                print(f"DEBUG: User details: {user.username}, Active: {user.is_active}")  # デバッグ
                 if user.is_active:
                     login(request, user)
-                    print("DEBUG: Login successful, redirecting")  # デバッグ
                     messages.success(request, f'ようこそ、{user.username}さん！')
                     return redirect('kintai_top')
                 else:
-                    print("DEBUG: User account is inactive")  # デバッグ
                     messages.error(request, 'このアカウントは無効化されています。管理者にお問い合わせください。')
             else:
-                print("DEBUG: Authentication failed")  # デバッグ
                 if user_exists:
                     messages.error(request, 'パスワードが正しくありません。')
                 else:
                     messages.error(request, 'ユーザー名が存在しません。')
         else:
-            print("DEBUG: Form validation failed")  # デバッグ
-            print(f"DEBUG: Form errors - {login_form.errors}")  # デバッグ
-            
             # より詳細なエラーメッセージを表示
             if 'username' in login_form.errors:
                 messages.error(request, 'ユーザー名を入力してください。')
@@ -139,24 +123,16 @@ def get_user_attendance_status(user):
         work_date=today
     ).order_by('-created_at')
     
-    print(f"DEBUG: User {user.username}, Today: {today}")
-    print(f"DEBUG: Found {today_reports.count()} reports for today")
-    
     if not today_reports.exists():
-        print("DEBUG: No reports found, returning NO_RECORD")
         return 'NO_RECORD'
     
     # 最新のレポートを取得
     latest_report = today_reports.first()
-    print(f"DEBUG: Latest report: {latest_report}")
-    print(f"DEBUG: clock_out_time: {latest_report.clock_out_time}")
     
     # 退勤時刻が設定されているかチェック
     if latest_report.clock_out_time:
-        print("DEBUG: clock_out_time exists, returning CLOCKED_OUT")
         return 'CLOCKED_OUT'
     else:
-        print("DEBUG: clock_out_time is None, returning CLOCKED_IN")
         return 'CLOCKED_IN'
 # 外部サービス呼び出しのライブラリは起動時のimportを避けるため関数内で遅延importする
 
@@ -174,7 +150,6 @@ def kintai_view(request):
     
     # ユーザーの現在の出勤状態を取得
     attendance_status = get_user_attendance_status(request.user)
-    print(f"DEBUG: Final attendance_status: {attendance_status}")
     
     # 日本時間での今日の最新のレポートを取得（表示用）
     jst_now = timezone.localtime(timezone.now())
@@ -183,7 +158,6 @@ def kintai_view(request):
         user=request.user,
         work_date=today
     ).order_by('-created_at').first()
-    print(f"DEBUG: last_clock_in: {last_clock_in}")
 
     # 今日の出発記録をチェック
     departure_record = DepartureRecord.objects.filter(
@@ -243,8 +217,6 @@ def checkin_view(request):
                 close_number=0,
                 swing_number=0,
             )
-            print(f"DEBUG: Created new report: {new_report}")
-            print(f"DEBUG: Report clock_out_time: {new_report.clock_out_time}")
             report_image = form.save(commit=False)
             report_image.report = new_report
             report_image.save()
@@ -253,6 +225,11 @@ def checkin_view(request):
             # 退勤時にclock_out_timeを設定する
             
             return redirect('kintai_complete') 
+        else:
+            # フォームのバリデーションエラーを表示
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
 
     else:
         form = ReportImageForm()
@@ -503,11 +480,6 @@ def team_performance_view(request):
     total_upg_all = sum(report.upg_close_number or 0 for report in reports)
     total_mnp_all = sum(report.mnp_close_number or 0 for report in reports)
     
-    # デバッグ情報を追加
-    print(f"DEBUG: selected_date = {selected_date}")
-    print(f"DEBUG: selected_date_obj = {selected_date_obj}")
-    print(f"DEBUG: selected_date_str = {selected_date}")
-    
     context = {
         'title': '実績一覧',
         'selected_date': selected_date_obj,
@@ -578,17 +550,10 @@ def kintai_clockout_view(request):
 
     # 「退勤を確定」ボタンが押された場合 (POSTリクエスト)
     if request.method == 'POST':
-        print(f"DEBUG: POST request received for user {request.user.username}")
-        print(f"DEBUG: POST data: {request.POST}")
-        
         form = ClockOutReportForm(request.POST)
         if form.is_valid():
-            print(f"DEBUG: Form is valid")
-            print(f"DEBUG: Form cleaned_data: {form.cleaned_data}")
-            
             # 既存のレポートがある場合は更新、ない場合は新規作成
             if last_clock_in:
-                print(f"DEBUG: Updating existing report: {last_clock_in.id}")
                 # 既存のレポートに退勤時刻と業務内容を設定
                 last_clock_in.clock_out_time = timezone.now()
                 
@@ -605,9 +570,7 @@ def kintai_clockout_view(request):
                 last_clock_in.tos_close_number = form.cleaned_data['tos_close_number']
                 
                 last_clock_in.save()
-                print(f"DEBUG: Report updated successfully")
             else:
-                print(f"DEBUG: No existing report found, creating new one")
                 # 既存のレポートがない場合は新規作成
                 new_report = Report.objects.create(
                     user=request.user,
@@ -625,12 +588,8 @@ def kintai_clockout_view(request):
                     tos_close_number=form.cleaned_data['tos_close_number'],
                     clock_out_time=timezone.now()
                 )
-                print(f"DEBUG: New report created: {new_report.id}")
             
             return redirect('kintai_checkout_complete')
-        else:
-            print(f"DEBUG: Form is not valid")
-            print(f"DEBUG: Form errors: {form.errors}")
 
     # 通常通りページを表示する場合 (GETリクエスト)
     else:
@@ -719,7 +678,7 @@ def admin_reports_view(request):
     return render(request, 'admin/reports.html', context)
 
 
-# @staff_member_required  # 一時的にコメントアウト
+@staff_member_required
 def admin_carriers_view(request):
     """キャリア管理画面"""
     from datetime import date
@@ -1068,7 +1027,7 @@ def admin_user_performance_view(request, user_id):
     return render(request, 'admin/user_performance.html', context)
 
 
-# @staff_member_required  # 一時的にコメントアウト
+@staff_member_required
 def admin_attendance_management_view(request):
     """
     稼働管理画面 - 出勤中のユーザーと打刻時刻を表示
@@ -1226,24 +1185,26 @@ def admin_delete_user_view(request):
             messages.error(request, '削除するユーザーを選択してください。')
         elif not confirm_password:
             messages.error(request, '確認パスワードを入力してください。')
-        elif confirm_password != 'delete12345':
-            messages.error(request, '確認パスワードが正しくありません。')
         else:
-            try:
-                user = User.objects.get(id=user_id)
-                username = user.username
-                
-                # 自分自身を削除しようとした場合のチェック
-                if user == request.user:
-                    messages.error(request, '自分自身を削除することはできません。')
-                else:
-                    user.delete()
-                    messages.success(request, f'ユーザー「{username}」を削除しました。')
-                    return redirect('admin_users')
-            except User.DoesNotExist:
-                messages.error(request, '選択されたユーザーが見つかりません。')
-            except Exception as e:
-                messages.error(request, f'ユーザー削除中にエラーが発生しました: {str(e)}')
+            # 現在のユーザーのパスワードで確認
+            if not request.user.check_password(confirm_password):
+                messages.error(request, 'パスワードが正しくありません。')
+            else:
+                try:
+                    user = User.objects.get(id=user_id)
+                    username = user.username
+                    
+                    # 自分自身を削除しようとした場合のチェック
+                    if user == request.user:
+                        messages.error(request, '自分自身を削除することはできません。')
+                    else:
+                        user.delete()
+                        messages.success(request, f'ユーザー「{username}」を削除しました。')
+                        return redirect('admin_users')
+                except User.DoesNotExist:
+                    messages.error(request, '選択されたユーザーが見つかりません。')
+                except Exception as e:
+                    messages.error(request, f'ユーザー削除中にエラーが発生しました: {str(e)}')
     
     # 全ユーザーを取得（自分以外）
     users = User.objects.exclude(id=request.user.id).order_by('username')
