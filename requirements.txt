@@ -1,5 +1,0 @@
-Django==4.2.11
-psycopg2-binary
-pillow
-django-browser-reload
-python-dateutil
